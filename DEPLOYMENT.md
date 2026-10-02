@@ -8,6 +8,8 @@ Create a Turso database and a read-write authentication token in the [Turso dash
 
 Tables and the initial Genesis mission board are created automatically on the first API request. Existing missions are preserved on subsequent starts. The development database is not uploaded.
 
+Production images are committed under `public/assets/` and copied to `dist/assets/` by Vite. The build verifies their presence and SHA-256 integrity. Source-only exclusions in `.vercelignore` use root anchors, such as `/assets/`, so they cannot exclude `public/assets/`.
+
 ## 2. Vercel project
 
 Import [SolClaude33/the-order-of-steering](https://github.com/SolClaude33/the-order-of-steering). Use the repository root, the **Vite** preset and **Node.js 22.x**. The committed configuration sets:

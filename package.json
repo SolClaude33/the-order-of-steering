@@ -8,10 +8,10 @@
   },
   "scripts": {
     "dev": "concurrently -k -n api,web npm:dev:api npm:dev:web",
-    "build": "npm run check && vite build",
+    "build": "npm run check && vite build && node scripts/check-deploy-assets.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "check": "tsc -b && tsc -p tsconfig.server.json",
-    "test": "node --experimental-strip-types --test tests/model.test.ts tests/server.test.ts tests/deployment.test.ts",
+    "test": "node --experimental-strip-types --test tests/model.test.ts tests/server.test.ts tests/deployment.test.ts tests/assets.test.mjs",
     "test:libsql": "node scripts/test-libsql.mjs",
     "test:e2e": "playwright test",
     "format": "prettier --write src server tests index.html vite.config.ts playwright.config.ts tsconfig.json tsconfig.server.json package.json",

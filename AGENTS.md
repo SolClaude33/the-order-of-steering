@@ -15,6 +15,7 @@ Nota de Obsidian: **Projects/The Order of Steering**; resolver el vault mediante
 - `api/index.ts` y `vercel.json`: función y configuración de Vercel.
 - `tests/`: dominio, seguridad/API, despliegue y Playwright.
 - `public/assets/`: branding y escenas servidas.
+- Anclar exclusiones de fuentes en .vercelignore: /assets/; nunca excluir public/assets/. El build verifica copias e integridad.
 - `assets/branding/`: PFP original aprobada, preservar intacta.
 - `assets-src/`: fuentes; WEBSITE-GENERATIONS.json registra generaciones.
 - `.local/`: SQLite, claves, variables privadas y capturas; ignorado por Git.

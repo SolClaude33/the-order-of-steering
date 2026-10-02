@@ -1,9 +1,13 @@
-.local/
+/.local/
 .env
 .env.*
-assets-src/
-assets/
-tests/
-PROJECT.md
-AGENTS.md
+# Root anchors preserve the served public/assets directory.
+/assets-src/
+/assets/
+/tests/
+/PROJECT.md
+/AGENTS.md
+/node_modules/
+/dist/
+/.vercel/
 *.tsbuildinfo

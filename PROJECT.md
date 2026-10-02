@@ -244,3 +244,9 @@ Próximo paso: crear la app de X, configurar Client ID/Secret y wallets Keepers 
 - Retirados los disclaimers de prototipo, ejemplos, atribución y reparto de la interfaz. Rewards muestra puntos y contribuciones. Los requisitos de conexión, errores y estados operativos siguen siendo reales. Interfaz en inglés.
 - Comprobaciones: build y TypeScript correctos; 24/24 pruebas de dominio/API, 11/11 con libSQL y 6/6 recorridos Playwright. Incluyen HTTP del adaptador, rewrites, firma wallet, cookies/CSRF, persistencia y dos instancias concurrentes. X simulado y libSQL local; comprobar los servicios reales tras configurar Vercel.
 - Pendiente de Nicol: crear/configurar Turso y X, introducir variables, desplegar y verificar el recorrido real. Token y distribución requieren un alcance posterior.
+
+## 14. Corrección de imágenes en Vercel — 2026-10-02
+
+Las 13 imágenes de producción estaban en GitHub, pero `.vercelignore` usaba `assets/` sin ancla y también excluía `public/assets/`. El sitio publicado servía la página con HTTP 200 y devolvía 404 para cada imagen.
+
+Corregidas las exclusiones de fuentes para usar `/assets/` y `/assets-src/`, limitadas a la raíz. El build ahora verifica que la PFP y ambos fondos del hero estén presentes y que los 13 archivos servidos coincidan por SHA-256 con sus copias en `dist/assets/`. La prueba de exclusiones reproduce el fallo anterior y pasa con la corrección; `npm test` pasa 25/25. Fuentes originales y datos privados siguen fuera del despliegue. No se generaron ni modificaron imágenes.
