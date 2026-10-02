@@ -66,8 +66,8 @@ function fixture(xConfigured = true) {
     throw new Error('Unexpected X test request ' + url);
   }) as typeof fetch;
   return {
-    create: (database = ':memory:') =>
-      buildServer(
+    create: async (database = ':memory:') => {
+      const built = await buildServer(
         {
           origin,
           database,
@@ -83,7 +83,15 @@ function fixture(xConfigured = true) {
                 database === ':memory:' ? 'file::memory:' : pathToFileURL(resolve(database)).href,
             })
           : undefined,
-      ),
+      );
+      // Example missions are explicit test fixtures; production boards start empty.
+      await built.database.transaction(async () => {
+        if (!(await built.database.missions()).length) {
+          for (const mission of initialState().missions) await built.database.putMission(mission);
+        }
+      });
+      return built;
+    },
     setX: (id: string) => {
       activeX = id;
     },

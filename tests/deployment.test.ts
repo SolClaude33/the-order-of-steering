@@ -11,6 +11,7 @@ import { readServerConfig } from '../server/config.ts';
 import { createVercelHandler } from '../server/vercel.ts';
 import { buildServer } from '../server/app.ts';
 import { OrderDatabase } from '../server/database.ts';
+import { initialState } from '../src/lib/model.ts';
 
 const production = {
   VERCEL: '1',
@@ -167,6 +168,69 @@ test('existing member storage gains an avatar column without losing identity or 
   } finally {
     reopened?.db.close();
     database?.db.close();
+    for (const file of [path, path + '-wal', path + '-shm']) if (existsSync(file)) unlinkSync(file);
+  }
+});
+
+test('example cleanup runs once, keeps history and custom missions, and never repopulates an empty board', async () => {
+  mkdirSync('.local', { recursive: true });
+  const path = resolve('.local', `mission-cleanup-${randomUUID()}.sqlite`);
+  const client =
+    process.env.ORDER_TEST_STORAGE === 'libsql'
+      ? createClient({ url: 'file::memory:' })
+      : undefined;
+  let database = await OrderDatabase.open(path, undefined, client);
+  let reopened: OrderDatabase | undefined;
+  try {
+    assert.equal((await database.missions()).length, 0, 'Fresh production storage starts empty');
+    // Reproduce storage from before the one-time cleanup was shipped.
+    await database.db.prepare('DELETE FROM schema_migrations').run();
+    for (const mission of initialState().missions) await database.putMission(mission);
+    const custom = {
+      ...initialState().missions[0],
+      id: 'custom-mission',
+      title: 'A Keeper-created mission',
+    };
+    const edited = { ...initialState().missions[2], title: 'A Keeper-edited brief' };
+    await database.putMission(custom);
+    await database.putMission(edited);
+    await database.db
+      .prepare('INSERT INTO members(wallet,name,chain,created_at) VALUES(?,?,?,?)')
+      .run('wallet', 'Member', 1, 'created');
+    const history = {
+      id: 'past-contribution',
+      missionId: 'share-vision',
+      missionTitle: 'Share the vision of the Order',
+      points: 120,
+      url: 'https://example.com/past-contribution',
+      description: 'An approved original contribution.',
+      createdAt: '2026-10-01',
+      status: 'verified' as const,
+      reason: 'All criteria met.',
+      reviewedAt: '2026-10-02',
+      decisions: [],
+    };
+    await database.putSubmission(history, 'wallet');
+    reopened = await OrderDatabase.open(path, undefined, client);
+    assert.deepEqual(
+      new Set((await reopened.missions()).map((m) => m.id)),
+      new Set([custom.id, edited.id]),
+    );
+    assert.deepEqual((await reopened.submissions('wallet'))[0], history);
+    // Future Keeper content can even reuse an old template's ID without a later cold start deleting it.
+    const recreated = initialState().missions[0];
+    await reopened.putMission(recreated);
+    const again = await OrderDatabase.open(path, undefined, client);
+    assert.ok((await again.missions()).some((m) => m.id === recreated.id));
+    await again.db.prepare('DELETE FROM missions').run();
+    const empty = await OrderDatabase.open(path, undefined, client);
+    assert.equal((await empty.missions()).length, 0);
+    assert.equal((await empty.submissions('wallet'))[0].points, 120);
+    empty.db.close();
+    again.db.close();
+  } finally {
+    reopened?.db.close();
+    database.db.close();
     for (const file of [path, path + '-wal', path + '-shm']) if (existsSync(file)) unlinkSync(file);
   }
 });

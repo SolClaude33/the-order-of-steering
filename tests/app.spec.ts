@@ -153,6 +153,8 @@ async function wallet(page: Page, key = '2') {
 async function signIn(page: Page, key = '2') {
   const account = await wallet(page, key);
   await page.goto('/#/app/profile');
+  // Hash navigation may keep the old document; reload to install the wallet fixture.
+  await page.reload();
   await page.getByRole('button', { name: 'Continue with Test wallet' }).click();
   await expect(page.getByRole('heading', { name: 'Wallet authenticated' })).toBeVisible();
   return account;
@@ -274,6 +276,76 @@ test('X name, handle and photo appear across the app, persist on reload and reco
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
   await expect(page.locator('.profile-identity h2')).toHaveText('A new perspective');
   await expect(page.locator('.profile-link strong')).toHaveText('Explorer');
+});
+
+test('@empty-board a Keeper can publish the first mission, submit evidence and record a review', async ({
+  page,
+}) => {
+  test.skip(
+    process.env.ORDER_TEST_EMPTY_BOARD !== '1',
+    'Run with ORDER_TEST_EMPTY_BOARD=1 and --grep @empty-board',
+  );
+  await page.route('https://pbs.twimg.com/**', (route) => route.abort());
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/#/app');
+  await expect(page.getByRole('heading', { name: 'A new chapter is on its way.' })).toBeVisible();
+  await expect(page.locator('.mission-card')).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator('.mission-card')).toHaveCount(0);
+  await signIn(page, '1');
+  await linkFixtureX(page, '4004');
+  await page.getByRole('link', { name: /^Keepers\b/ }).click();
+  await page.getByRole('button', { name: /Manage missions/ }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Your first mission starts here.' }),
+  ).toBeVisible();
+  await expect(page.locator('.route-content')).toHaveCSS('opacity', '1');
+  await noOverflow(page);
+  await expect(page.locator('.profile-link img')).toHaveAttribute(
+    'src',
+    '/assets/branding/pfp-approved-v01.png',
+  );
+  await page.screenshot({ path: '.local/captures/keeper-empty-desktop.png', fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await noOverflow(page);
+  await page.screenshot({ path: '.local/captures/keeper-empty-mobile.png', fullPage: true });
+  await page.getByRole('button', { name: 'Create your first mission' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await noOverflow(page);
+  await page.getByLabel('Title', { exact: true }).fill('Our first community mission');
+  await page
+    .getByLabel('Description', { exact: true })
+    .fill('Share an original contribution about the Order and submit a public link for review.');
+  await page.getByLabel('Points', { exact: true }).fill('25');
+  await page
+    .getByLabel('Requirements', { exact: true })
+    .fill('Publish an original contribution.\nSubmit a public link with a useful explanation.');
+  await page.getByRole('button', { name: 'Publish mission' }).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await page.getByRole('link', { name: 'Missions', exact: true }).click();
+  await expect(page.locator('.mission-card')).toHaveCount(1);
+  await page.reload();
+  await expect(page.locator('.mission-card')).toHaveCount(1);
+  await openMission(page, 'Our first community mission');
+  await page.getByLabel('Public link').fill('https://example.com/first-community-contribution');
+  await page
+    .getByLabel('Tell us what you did')
+    .fill('I published an original reflection explaining a practical way to contribute.');
+  await page.getByRole('button', { name: 'Submit evidence', exact: true }).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await expect(page.locator('.stats-grid')).toContainText('0pts');
+  await page.getByRole('link', { name: /^Keepers\b/ }).click();
+  await page.getByRole('button', { name: 'Review submission', exact: true }).click();
+  await page
+    .getByLabel('Reason for the decision')
+    .fill('The evidence is original and meets all mission requirements.');
+  await page.getByRole('button', { name: 'Record decision' }).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await page.getByRole('link', { name: 'My journey', exact: true }).click();
+  await expect(page.locator('.stats-grid')).toContainText('25pts');
+  expect(errors).toEqual([]);
 });
 
 test('wallet plus X enables server evidence, authorized reviews, points and persistence', async ({

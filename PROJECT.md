@@ -262,3 +262,9 @@ Corregidos cuatro estados vacíos de la app: las acciones usan la propiedad `act
 Nicol confirmó que el acceso real con wallet y el vínculo de X funcionan. El perfil, la identidad del menú lateral y el avatar de la cabecera ahora usan el nombre, @usuario y foto obtenidos de X durante OAuth. Los datos se conservan en SQLite/Turso; refrescar la sesión o navegar no vuelve a consultar X. Reconnect X actualiza esos datos y permite importar la foto de cuentas vinculadas antes de esta mejora. El nombre personalizado del perfil se conserva como dato independiente y alternativa cuando X no está conectado.
 
 La migración añade la columna de imagen sin borrar cuentas, tokens cifrados ni contribuciones. Fotos ausentes o inaccesibles usan la PFP aprobada como alternativa; el branding de la web mantiene esa PFP. Keeper y distribución de tokens siguen pendientes. La verificación real de una misión permanece por comprobar.
+
+## 17. Tablero vacío y acceso Keeper — 2026-10-02
+
+Nicol pidió retirar las seis misiones iniciales para publicar las suyas. El arranque ya no genera misiones de ejemplo. Una migración única retira los seis IDs/títulos originales, conserva misiones personalizadas y deja intactos perfiles, evidencias y puntos históricos. El marcador de migración impide borrar futuras misiones o repoblar un tablero vacío al reiniciar. Cada retirada queda auditada.
+
+Los estados vacíos distinguen un tablero sin publicar de filtros sin resultados; Keepers puede crear su primera misión desde el panel. Se mantienen las reglas de autorización: wallet EVM firmada, X conectado y dirección pública incluida en KEEPER_WALLETS del servidor. Nicol configura esa variable en Production y hace Redeploy. Para probar el recorrido inicial, usar Keepers review; luego activar comprobación de autoría de posts/respuestas de X en las misiones correspondientes. La distribución de tokens sigue fuera de alcance.

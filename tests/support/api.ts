@@ -1,5 +1,6 @@
 import { privateKeyToAccount } from 'viem/accounts';
 import { buildServer } from '../../server/app.ts';
+import { initialState } from '../../src/lib/model.ts';
 // This fake external X transport exists only in the test harness. All HTTP authentication,
 // sessions, wallet signatures, authorization and database writes use the real server.
 const xFetch = (async (input: string | URL | Request, init?: RequestInit) => {
@@ -31,7 +32,7 @@ const xFetch = (async (input: string | URL | Request, init?: RequestInit) => {
   return Response.json({ error: 'No fixture for this endpoint' }, { status: 404 });
 }) as typeof fetch;
 const keeper = privateKeyToAccount(('0x' + '1'.repeat(64)) as `0x${string}`);
-const { app } = await buildServer(
+const { app, database } = await buildServer(
   {
     origin: 'http://127.0.0.1:5180',
     database: ':memory:',
@@ -42,6 +43,9 @@ const { app } = await buildServer(
   },
   xFetch,
 );
+if (process.env.ORDER_TEST_EMPTY_BOARD !== '1') {
+  for (const mission of initialState().missions) await database.putMission(mission);
+}
 await app.listen({ host: '127.0.0.1', port: 5181 });
 console.log('Isolated test API ready');
 for (const signal of ['SIGINT', 'SIGTERM'] as const)

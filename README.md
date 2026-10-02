@@ -36,6 +36,8 @@ It creates `.local/vercel.env` with the required variable names and a secure enc
 
 Visitors can browse missions without signing in. Submitting evidence requires **a verified EVM wallet and a connected X account**.
 
+The live board starts empty; Keepers publish its missions. The six original examples are retired once, without deleting contribution history. Restarting the API does not recreate them. Example boards used in tests are seeded explicitly by the test harness.
+
 Wallet sign-in uses server-issued [Sign-In with Ethereum](https://eips.ethereum.org/EIPS/eip-4361) messages, short-lived nonces and verified signatures. Browser wallets discovered through EIP-6963 or an injected EVM provider are supported, including wallet browsers on mobile.
 
 X identity is linked by its immutable account ID; one X account belongs to one wallet profile. Reconnecting the same account renews authorization. OAuth 2.0 uses PKCE S256 and requests `users.read tweet.read offline.access`. X tokens are encrypted on the server, with refresh coordinated across API instances.

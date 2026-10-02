@@ -326,6 +326,7 @@ function MissionDialog({
 }
 function Missions({ notify }: { notify: (text: string) => void }) {
   const { state, loading } = useStore();
+  const auth = useAuth();
   const location = useLocation();
   const initialCategory = new URLSearchParams(location.search).get('category');
   const [category, setCategory] = useState<string>(
@@ -435,26 +436,45 @@ function Missions({ notify }: { notify: (text: string) => void }) {
               ))}
             </AnimatePresence>
           </div>
-        ) : (
+        ) : !loading && state.missions.length === 0 ? (
           <EmptyState
-            icon={<CompassIcon size={34} />}
-            title="No missions in this view"
+            icon={<CompassIcon size={38} />}
+            title="A new chapter is on its way."
             action={
-              <button
-                className="text-link inline-reset"
-                onClick={() => {
-                  setCategory('All');
-                  setFilter('all');
-                  setSearch('');
-                }}
-              >
-                Show all missions
-                <ArrowRightIcon size={16} />
-              </button>
+              auth.isKeeper && auth.ready ? (
+                <Link className="button button-primary" to="/app/keepers">
+                  Create a mission
+                  <PlusIcon size={17} />
+                </Link>
+              ) : undefined
             }
           >
-            Try another category or change the filter.
+            {auth.isKeeper && auth.ready
+              ? 'Publish your first mission from the Keepers space.'
+              : 'New missions will appear here when the Keepers publish them.'}
           </EmptyState>
+        ) : (
+          !loading && (
+            <EmptyState
+              icon={<CompassIcon size={34} />}
+              title="No missions in this view"
+              action={
+                <button
+                  className="text-link inline-reset"
+                  onClick={() => {
+                    setCategory('All');
+                    setFilter('all');
+                    setSearch('');
+                  }}
+                >
+                  Show all missions
+                  <ArrowRightIcon size={16} />
+                </button>
+              }
+            >
+              Try another category or change the filter.
+            </EmptyState>
+          )
         )}
       </section>
       {selected && (
@@ -1036,7 +1056,7 @@ function Keepers({ notify }: { notify: (text: string) => void }) {
             New submissions will appear here for review.
           </EmptyState>
         )
-      ) : (
+      ) : state.missions.length ? (
         <div className="manage-list">
           {state.missions.map((m) => (
             <article key={m.id}>
@@ -1074,6 +1094,19 @@ function Keepers({ notify }: { notify: (text: string) => void }) {
             </article>
           ))}
         </div>
+      ) : (
+        <EmptyState
+          icon={<CompassIcon size={38} />}
+          title="Your first mission starts here."
+          action={
+            <button className="button button-primary" onClick={() => setEditor('new')}>
+              <PlusIcon size={18} />
+              Create your first mission
+            </button>
+          }
+        >
+          Set the brief, choose how evidence is checked and publish it for the community.
+        </EmptyState>
       )}
       {editor && (
         <MissionEditor

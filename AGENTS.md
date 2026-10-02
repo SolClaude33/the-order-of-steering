@@ -30,6 +30,8 @@ Node 22.x, mínimo 22.16. Comandos: `npm ci`, `npm run dev` (5173/5174), `npm ru
 
 Exigir wallet y X para entregas; Keepers mediante allowlist del servidor. No aceptar puntos, aprobaciones o identidad del cliente. Pendientes no conceden puntos; decisiones finales no se repiten; editar misiones conserva puntos históricos. No importar registros antiguos como puntos autenticados.
 
+El tablero real empieza vacío; no regenerar misiones de ejemplo. Su retirada es una migración única auditada que preserva entregas. Las pruebas cargan ejemplos explícitos; `ORDER_TEST_EMPTY_BOARD=1` con `npm run test:e2e -- --grep @empty-board` valida el recorrido desde cero.
+
 ## Desarrollo y entrega
 
 Desarrollo local, sin delegación salvo petición nueva. No usar design-taste-frontend. Preservar proyectos vecinos; nunca operar sobre el Git padre.

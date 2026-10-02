@@ -6,7 +6,7 @@ The repository includes a Vite frontend and a Node API in `api/index.ts`. Vercel
 
 Create a Turso database and a read-write authentication token in the [Turso dashboard](https://app.turso.tech/). Copy its `libsql://…` URL and token into the variables below. Prefer a database location near US East: the API region in `vercel.json` is `iad1`.
 
-Tables and the initial Genesis mission board are created automatically on the first API request. Existing missions are preserved on subsequent starts. The development database is not uploaded.
+Tables are created automatically on the first API request. New databases start with an empty mission board. A one-time migration retires the six original example missions by their known IDs and titles; custom missions, profiles, evidence and historical points remain intact. Empty boards are never repopulated automatically. The development database is not uploaded.
 
 Production images are committed under `public/assets/` and copied to `dist/assets/` by Vite. The build verifies their presence and SHA-256 integrity. Source-only exclusions in `.vercelignore` use root anchors, such as `/assets/`, so they cannot exclude `public/assets/`.
 
@@ -92,6 +92,8 @@ Copy both OAuth credentials directly into Vercel **Production**:
 Both X variables must be set together; they may both be empty while configuring the project. Keep the existing database and encryption-key variables. Redeploy after saving. Then open the production app's **Profile**, authenticate with an EVM wallet, choose **Connect X**, authorize the app, and confirm the returned profile shows the connected account. This test does not require Keeper access. A full mission approval can be checked later, after configuring the team's wallets.
 
 Each Keeper signs in with an allowlisted wallet and connects X before managing missions. An empty `KEEPER_WALLETS` list grants no one Keeper access.
+
+To enable your own Keeper account, set `KEEPER_WALLETS` in **Production** to the public EVM address of the wallet you already use to sign in. Add further team addresses separated by commas. Save, redeploy and refresh the app: **Keepers → Manage missions → Create your first mission** opens the editor. Start with **Keepers review** verification to test creation, evidence and decisions without an X post lookup; choose X post/reply verification when ready to check real posts. Evidence earns points only after an approved review.
 
 ## 5. Release checks
 

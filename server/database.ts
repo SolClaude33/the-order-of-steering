@@ -31,6 +31,7 @@ const schema = [
   'CREATE TABLE IF NOT EXISTS missions(id TEXT PRIMARY KEY, data TEXT NOT NULL)',
   'CREATE TABLE IF NOT EXISTS submissions(id TEXT PRIMARY KEY, wallet TEXT NOT NULL REFERENCES members(wallet), evidence TEXT NOT NULL UNIQUE, data TEXT NOT NULL)',
   'CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY, actor TEXT NOT NULL, action TEXT NOT NULL, subject TEXT NOT NULL, at TEXT NOT NULL)',
+  'CREATE TABLE IF NOT EXISTS schema_migrations(id TEXT PRIMARY KEY, applied_at TEXT NOT NULL)',
 ];
 
 export class OrderDatabase {
@@ -77,24 +78,20 @@ export class OrderDatabase {
         if (!memberColumns.some((column) => column.name === 'x_avatar')) {
           await database.db.prepare('ALTER TABLE members ADD COLUMN x_avatar TEXT').run();
         }
-        if (!(await database.db.prepare('SELECT id FROM missions LIMIT 1').get())) {
-          for (const mission of initialState().missions) await database.putMission(mission);
-        }
-        const missions = await database.missions();
-        for (const example of initialState().missions) {
-          const current = missions.find((mission) => mission.id === example.id);
-          if (!current || current.title !== example.title) continue;
-          const next = { ...current };
-          if (example.verification === 'x_post' && current.verification === undefined) {
-            next.verification = example.verification;
-            next.requiredText = example.requiredText;
+        const cleanupId = 'retire-genesis-examples-v1';
+        if (
+          !(await database.db.prepare('SELECT id FROM schema_migrations WHERE id=?').get(cleanupId))
+        ) {
+          const missions = await database.missions();
+          for (const example of initialState().missions) {
+            const current = missions.find((mission) => mission.id === example.id);
+            if (!current || current.title !== example.title) continue;
+            await database.db.prepare('DELETE FROM missions WHERE id=?').run(current.id);
+            await database.audit('system', 'retire_example_mission', current.id);
           }
-          next.requirements = current.requirements.map((requirement) =>
-            requirement === 'Explain that this version is a local preview.'
-              ? 'Show how to connect a wallet and X account.'
-              : requirement,
-          );
-          if (JSON.stringify(next) !== JSON.stringify(current)) await database.putMission(next);
+          await database.db
+            .prepare('INSERT INTO schema_migrations(id,applied_at) VALUES(?,?)')
+            .run(cleanupId, new Date().toISOString());
         }
       });
       return database;
