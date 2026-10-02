@@ -15,8 +15,8 @@ if (existsSync(path)) {
     'X_CLIENT_ID=',
     'X_CLIENT_SECRET=',
     'KEEPER_WALLETS=',
-    '# Optional: canonical HTTPS production origin, no trailing slash.',
-    'APP_ORIGIN=',
+    '# Canonical HTTPS production origin, no trailing slash.',
+    'APP_ORIGIN=https://theorderofsteering.com',
     '',
   ].join('\n');
   writeFileSync(path, content, { flag: 'wx', mode: 0o600 });

@@ -435,19 +435,24 @@ function Missions({ notify }: { notify: (text: string) => void }) {
             </AnimatePresence>
           </div>
         ) : (
-          <EmptyState icon={<CompassIcon size={34} />} title="No missions in this view">
+          <EmptyState
+            icon={<CompassIcon size={34} />}
+            title="No missions in this view"
+            action={
+              <button
+                className="text-link inline-reset"
+                onClick={() => {
+                  setCategory('All');
+                  setFilter('all');
+                  setSearch('');
+                }}
+              >
+                Show all missions
+                <ArrowRightIcon size={16} />
+              </button>
+            }
+          >
             Try another category or change the filter.
-            <button
-              className="text-link inline-reset"
-              onClick={() => {
-                setCategory('All');
-                setFilter('all');
-                setSearch('');
-              }}
-            >
-              Show all missions
-              <ArrowRightIcon size={16} />
-            </button>
           </EmptyState>
         )}
       </section>
@@ -512,16 +517,18 @@ function History() {
               ? 'No submissions with this status.'
               : 'Your story is yet to be written.'
           }
+          action={
+            !state.submissions.length && (
+              <Link className="button button-primary" to="/app">
+                Explore missions
+                <ArrowRightIcon size={18} />
+              </Link>
+            )
+          }
         >
           {state.submissions.length
             ? 'Change the filter to see your other contributions.'
-            : 'Submit your first evidence to follow its review and approved points here.'}
-          {!state.submissions.length && (
-            <Link className="button button-primary" to="/app">
-              Explore missions
-              <ArrowRightIcon size={18} />
-            </Link>
-          )}
+            : 'Choose a mission and share your work to start your record.'}
         </EmptyState>
       )}
       {selected && (
@@ -922,12 +929,17 @@ function Keepers({ notify }: { notify: (text: string) => void }) {
     return (
       <>
         <PageHeading title="Keepers" description="Mission management and contribution review." />
-        <EmptyState icon={<ShieldCheckIcon size={38} />} title="Keeper access required">
+        <EmptyState
+          icon={<ShieldCheckIcon size={38} />}
+          title="Keeper access required"
+          action={
+            <Link to="/app/profile" className="text-link">
+              View your profile
+              <ArrowRightIcon size={17} />
+            </Link>
+          }
+        >
           This workspace is available to authorized team wallets with a connected X account.
-          <Link to="/app/profile" className="text-link">
-            View your profile
-            <ArrowRightIcon size={17} />
-          </Link>
         </EmptyState>
       </>
     );
@@ -1010,12 +1022,17 @@ function Keepers({ notify }: { notify: (text: string) => void }) {
             ))}
           </div>
         ) : (
-          <EmptyState icon={<ShieldCheckIcon size={38} />} title="Ready for the next contribution.">
+          <EmptyState
+            icon={<ShieldCheckIcon size={38} />}
+            title="Ready for the next contribution."
+            action={
+              <Link className="text-link" to="/app">
+                Explore missions
+                <ArrowRightIcon size={17} />
+              </Link>
+            }
+          >
             New submissions will appear here for review.
-            <Link className="text-link" to="/app">
-              Explore missions
-              <ArrowRightIcon size={17} />
-            </Link>
           </EmptyState>
         )
       ) : (

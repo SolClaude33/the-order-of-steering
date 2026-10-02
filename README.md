@@ -22,6 +22,8 @@ Use `npm.cmd` in PowerShell when its script policy blocks `npm.ps1`. The develop
 
 [DEPLOYMENT.md](./DEPLOYMENT.md) contains the complete import, database, environment-variable and X callback setup. The repository includes `vercel.json` and a Node API entry point. Nicol handles deployment.
 
+The canonical production domain is `https://theorderofsteering.com`. Connect it in Vercel and set `APP_ORIGIN` to that exact origin. The production X callback is `https://theorderofsteering.com/api/auth/x/callback`.
+
 Generate a private environment import file with:
 
 ```sh

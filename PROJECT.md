@@ -250,3 +250,9 @@ Próximo paso: crear la app de X, configurar Client ID/Secret y wallets Keepers 
 Las 13 imágenes de producción estaban en GitHub, pero `.vercelignore` usaba `assets/` sin ancla y también excluía `public/assets/`. El sitio publicado servía la página con HTTP 200 y devolvía 404 para cada imagen.
 
 Corregidas las exclusiones de fuentes para usar `/assets/` y `/assets-src/`, limitadas a la raíz. El build ahora verifica que la PFP y ambos fondos del hero estén presentes y que los 13 archivos servidos coincidan por SHA-256 con sus copias en `dist/assets/`. La prueba de exclusiones reproduce el fallo anterior y pasa con la corrección; `npm test` pasa 25/25. Fuentes originales y datos privados siguen fuera del despliegue. No se generaron ni modificaron imágenes.
+
+## 15. Dominio principal y configuración de X — 2026-10-02
+
+Nicol eligió **theorderofsteering.com** como dominio principal. El canonical, la guía de Vercel, la configuración de X y el generador privado de variables usan `https://theorderofsteering.com`. El callback de X es `https://theorderofsteering.com/api/auth/x/callback`. Conectar el dominio y sus DNS en Vercel, actualizar `APP_ORIGIN` en Production y configurar OAuth 2.0 Web App con Client ID/Secret antes de comprobar acceso real. Conservar Turso y la clave de cifrado existentes. La wallet de Keeper queda para después por indicación de Nicol.
+
+Corregidos cuatro estados vacíos de la app: las acciones usan la propiedad `action` de `EmptyState`, fuera del párrafo. El historial conserva una frase breve en inglés. No cambia la autenticación, los permisos, las misiones ni los puntos. La validación y las capturas de escritorio/móvil quedan registradas en la nota del proyecto.
