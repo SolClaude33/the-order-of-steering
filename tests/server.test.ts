@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { privateKeyToAccount } from 'viem/accounts';
 import { buildServer } from '../server/app.ts';
 import { decrypt, encrypt } from '../server/x.ts';
-import { initialState } from '../src/lib/model.ts';
+import { initialState, totalPoints } from '../src/lib/model.ts';
 import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, unlinkSync } from 'node:fs';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -523,6 +523,211 @@ test('two API instances coordinate X refresh and concurrent evidence on shared s
     assert.equal(responses.filter((r) => [400, 409].includes(r.statusCode)).length, 1);
     assert.equal((await first.database.submissions(wallet)).length, 1);
     assert.equal((await second.database.submissions(wallet))[0].status, 'pending');
+  } finally {
+    await first.app.close();
+    await second.app.close();
+    if (process.env.ORDER_TEST_STORAGE === 'libsql') {
+      global.gc?.();
+      await delay(50);
+    }
+    for (const file of [path, path + '-wal', path + '-shm']) if (existsSync(file)) unlinkSync(file);
+  }
+});
+
+test('automatic visits enforce identity and a server timer, ignore client rewards and credit each member once', async () => {
+  const f = fixture();
+  const built = await f.create();
+  try {
+    const k = client(built),
+      a = client(built),
+      b = client(built);
+    const mission = {
+      ...initialState().missions[2],
+      id: 'visit-account',
+      title: 'Visit our X account',
+      verification: 'visit',
+      actionUrl: 'https://x.com/orderofsteering',
+      points: 100,
+    };
+    await k.login(keeper);
+    await k.link();
+    assert.equal(
+      (await k.send('POST', '/api/keepers/missions', { ...mission, actionUrl: '' })).statusCode,
+      400,
+    );
+    assert.equal(
+      (
+        await k.send('POST', '/api/keepers/missions', {
+          ...mission,
+          actionUrl: 'javascript:alert(1)',
+        })
+      ).statusCode,
+      400,
+    );
+    assert.equal((await k.send('POST', '/api/keepers/missions', mission)).statusCode, 200);
+    await a.login();
+    assert.equal(
+      (await a.send('POST', '/api/visits/start', { missionId: mission.id })).statusCode,
+      403,
+    );
+    f.setX('202');
+    await a.link();
+    const start = await a.send('POST', '/api/visits/start', { missionId: mission.id });
+    assert.equal(start.statusCode, 200, start.body);
+    assert.equal(start.json().url, mission.actionUrl);
+    assert.equal(start.json().waitMs, 3000);
+    const claim = {
+      missionId: mission.id,
+      token: start.json().token,
+      points: 99999,
+      status: 'verified',
+      wallet: keeper.address,
+      startedAt: 0,
+    };
+    assert.equal((await a.send('POST', '/api/visits/complete', claim)).statusCode, 409);
+    assert.equal(
+      (await a.send('POST', '/api/visits/complete', { ...claim, token: '0'.repeat(64) }))
+        .statusCode,
+      409,
+    );
+    assert.equal(
+      (
+        await a.send('POST', '/api/submissions', {
+          missionId: mission.id,
+          url: mission.actionUrl,
+          description: 'Trying to bypass the automatic visit timer.',
+        })
+      ).statusCode,
+      400,
+    );
+    await b.login(other);
+    f.setX('303');
+    await b.link();
+    assert.equal((await b.send('POST', '/api/visits/complete', claim)).statusCode, 409);
+    // Only the fixture database can advance the stored start; client timestamps above are ignored.
+    await built.database.db
+      .prepare('UPDATE mission_visits SET started_at=? WHERE wallet=?')
+      .run(Date.now() - 3100, member.address.toLowerCase());
+    const completed = await Promise.all([
+      a.send('POST', '/api/visits/complete', claim),
+      a.send('POST', '/api/visits/complete', claim),
+    ]);
+    for (const response of completed) assert.equal(response.statusCode, 200, response.body);
+    const state = (await a.send('GET', '/api/state')).json().state;
+    assert.equal(state.submissions.length, 1);
+    assert.equal(totalPoints(state), 100);
+    assert.equal(state.submissions[0].wallet, member.address);
+    assert.equal(state.submissions[0].status, 'verified');
+    assert.match(state.submissions[0].verificationSource, /server timer/);
+    assert.equal(
+      (await a.send('POST', '/api/visits/start', { missionId: mission.id })).statusCode,
+      409,
+    );
+    const second = (await b.send('POST', '/api/visits/start', { missionId: mission.id })).json();
+    await built.database.db
+      .prepare('UPDATE mission_visits SET started_at=? WHERE wallet=?')
+      .run(Date.now() - 3100, other.address.toLowerCase());
+    assert.equal(
+      (await b.send('POST', '/api/visits/complete', { missionId: mission.id, token: second.token }))
+        .statusCode,
+      200,
+    );
+    assert.equal(totalPoints((await b.send('GET', '/api/state')).json().state), 100);
+    assert.equal(
+      (await built.database.db.prepare("SELECT * FROM audit WHERE action='visit_complete'").all())
+        .length,
+      2,
+    );
+  } finally {
+    await built.app.close();
+  }
+});
+
+test('automatic visit attempts expire, reject changed missions and cannot reward closed or manual missions', async () => {
+  const built = await fixture().create();
+  try {
+    const a = client(built);
+    await a.login();
+    await a.link();
+    const mission = {
+      ...initialState().missions[2],
+      id: 'visit-changes',
+      verification: 'visit' as const,
+      actionUrl: 'https://x.com/orderofsteering',
+    };
+    await built.database.putMission(mission);
+    const start = (await a.send('POST', '/api/visits/start', { missionId: mission.id })).json();
+    await built.database.db.prepare('UPDATE mission_visits SET expires=?').run(Date.now() - 1);
+    assert.equal(
+      (await a.send('POST', '/api/visits/complete', { missionId: mission.id, token: start.token }))
+        .statusCode,
+      409,
+    );
+    const next = (await a.send('POST', '/api/visits/start', { missionId: mission.id })).json();
+    await built.database.db
+      .prepare('UPDATE mission_visits SET started_at=?')
+      .run(Date.now() - 3100);
+    await built.database.putMission({ ...mission, points: 75 });
+    const changed = await a.send('POST', '/api/visits/complete', {
+      missionId: mission.id,
+      token: next.token,
+    });
+    assert.equal(changed.statusCode, 409);
+    assert.match(changed.json().error, /mission changed/);
+    await built.database.putMission({ ...mission, archived: true });
+    assert.equal(
+      (await a.send('POST', '/api/visits/start', { missionId: mission.id })).statusCode,
+      409,
+    );
+    await built.database.putMission({ ...mission, deadline: '2000-01-01' });
+    assert.equal(
+      (await a.send('POST', '/api/visits/start', { missionId: mission.id })).statusCode,
+      409,
+    );
+    assert.equal(
+      (await a.send('POST', '/api/visits/start', { missionId: 'test-app' })).statusCode,
+      400,
+    );
+    assert.equal((await built.database.submissions()).length, 0);
+  } finally {
+    await built.app.close();
+  }
+});
+
+test('a visit started on one API instance completes on another without duplicate credit', async () => {
+  mkdirSync('.local', { recursive: true });
+  const path = resolve('.local', `visit-instances-${randomUUID()}.sqlite`);
+  const f = fixture();
+  const first = await f.create(path);
+  const second = await f.create(path);
+  try {
+    const mission = {
+      ...initialState().missions[2],
+      id: 'visit-persistent',
+      verification: 'visit' as const,
+      actionUrl: 'https://x.com/orderofsteering',
+      points: 100,
+    };
+    await first.database.putMission(mission);
+    const a = client(first),
+      b = client(second);
+    await a.login();
+    await a.link();
+    const token = (await a.send('POST', '/api/visits/start', { missionId: mission.id })).json()
+      .token;
+    await b.login();
+    await first.database.db
+      .prepare('UPDATE mission_visits SET started_at=?')
+      .run(Date.now() - 3100);
+    const claim = { missionId: mission.id, token };
+    const result = await Promise.all([
+      a.send('POST', '/api/visits/complete', claim),
+      b.send('POST', '/api/visits/complete', claim),
+    ]);
+    for (const response of result) assert.equal(response.statusCode, 200, response.body);
+    assert.equal(totalPoints((await b.send('GET', '/api/state')).json().state), 100);
+    assert.equal((await first.database.submissions()).length, 1);
+    assert.equal((await second.database.submissions()).length, 1);
   } finally {
     await first.app.close();
     await second.app.close();

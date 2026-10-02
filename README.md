@@ -42,7 +42,7 @@ Wallet sign-in uses server-issued [Sign-In with Ethereum](https://eips.ethereum.
 
 X identity is linked by its immutable account ID; one X account belongs to one wallet profile. Reconnecting the same account renews authorization. OAuth 2.0 uses PKCE S256 and requests `users.read tweet.read offline.access`. X tokens are encrypted on the server, with refresh coordinated across API instances.
 
-Connecting X saves its display name, handle and profile image for the profile card, sidebar and header avatar. These details are read from storage during navigation. Profiles linked before image support was added can use **Reconnect X** once to import the photo; reconnecting also updates changed X profile details. Unavailable photos fall back to the Order avatar.
+Connecting X saves its display name, handle and profile image for the profile card, sidebar and header avatar. There is no separate display-name editor. These details are read from storage during navigation. Profiles linked before image support was added can use **Reconnect X** once to import the photo; reconnecting also updates changed X profile details. Unavailable photos fall back to the Order avatar.
 
 Keepers create, edit and archive missions, review evidence with a recorded reason and export a reward register containing verified wallet addresses. Approved points come from server records; pending submissions grant no points and final approvals cannot be repeated. Tokens are not transferred by this application.
 
@@ -55,6 +55,10 @@ Keepers create, edit and archive missions, review evidence with a recorded reaso
 5. Restart the API, sign in and connect X from Profile. Keepers require both connections.
 
 API access must allow user and post lookup. Supported mission checks are manual review, X author/text verification and X replies to a configured target. Successful post URLs are canonicalized to prevent reuse through X/Twitter aliases. Keepers review contribution quality.
+
+For an account-follow mission, select **Keepers review** and explain the required evidence in the mission requirements. Follow verification is manual. **X reply to target** requires the numeric ID after `/status/` in a post URL; a profile URL cannot be used as its target.
+
+For an introductory link visit, add a HTTPS **Mission link** and select **Visit link — automatic after 3 seconds**. Members open the destination in a new tab; the server records a verified contribution and awards the configured points after three seconds. Wallet and X are required. A visit does not verify a follow and does not call the X API. Visit attempts persist in SQLite/Turso, expire after ten minutes and can award each wallet only once per mission. No additional environment variables are required.
 
 Live X authorization still requires the developer app configuration. Likes, follows, repost verification, WalletConnect QR connections and smart contract wallet signatures are not implemented.
 

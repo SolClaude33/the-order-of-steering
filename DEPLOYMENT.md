@@ -6,7 +6,9 @@ The repository includes a Vite frontend and a Node API in `api/index.ts`. Vercel
 
 Create a Turso database and a read-write authentication token in the [Turso dashboard](https://app.turso.tech/). Copy its `libsql://…` URL and token into the variables below. Prefer a database location near US East: the API region in `vercel.json` is `iad1`.
 
-Tables are created automatically on the first API request. New databases start with an empty mission board. A one-time migration retires the six original example missions by their known IDs and titles; custom missions, profiles, evidence and historical points remain intact. Empty boards are never repopulated automatically. The development database is not uploaded.
+Tables are created automatically on the first API request, including persistent automatic-visit attempts. New databases start with an empty mission board. A one-time migration retires the six original example missions by their known IDs and titles; custom missions, profiles, evidence and historical points remain intact. Empty boards are never repopulated automatically. The development database is not uploaded.
+
+To reward an introductory visit, add a HTTPS Mission link and select Visit link — automatic after 3 seconds in the Keeper editor. The server records the configured points once per wallet/mission. This verifies a timed link visit, not an X follow, and requires no additional environment variables or X API calls.
 
 Production images are committed under `public/assets/` and copied to `dist/assets/` by Vite. The build verifies their presence and SHA-256 integrity. Source-only exclusions in `.vercelignore` use root anchors, such as `/assets/`, so they cannot exclude `public/assets/`.
 

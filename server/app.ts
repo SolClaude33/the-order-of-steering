@@ -12,7 +12,7 @@ import type { Session } from './database.ts';
 import type { Client } from '@libsql/client';
 import { decrypt, encrypt, PublicError, XClient } from './x.ts';
 import type { XConfig } from './x.ts';
-import { reviewSubmission, saveMission, submitEvidence } from '../src/lib/model.ts';
+import { canSubmit, reviewSubmission, saveMission, submitEvidence } from '../src/lib/model.ts';
 import type { Mission, Status } from '../src/lib/model.ts';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 
@@ -28,6 +28,7 @@ export type ServerConfig = {
 const random = () => randomBytes(32).toString('hex');
 const digest = (value: string) => createHash('sha256').update(value).digest('hex');
 const sessionLifetime = 7 * 24 * 60 * 60 * 1000;
+const visitWaitMs = 3000;
 const missionSchema = z.object({
   id: z.string().min(1).max(80),
   title: z.string().min(1).max(100),
@@ -38,7 +39,8 @@ const missionSchema = z.object({
   requirements: z.array(z.string().min(1).max(300)).min(1).max(8),
   deadline: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   archived: z.boolean(),
-  verification: z.enum(['manual', 'x_post', 'x_reply']).default('manual'),
+  verification: z.enum(['manual', 'x_post', 'x_reply', 'visit']).default('manual'),
+  actionUrl: z.string().max(2048).optional(),
   targetPostId: z.string().regex(/^\d+$/).optional(),
   requiredText: z.string().max(100).optional(),
 });
@@ -425,6 +427,8 @@ export async function buildServer(
       .parse(req.body);
     const mission = (await database.missions()).find((m) => m.id === body.missionId);
     if (!mission) throw new PublicError('Mission not found.', 404);
+    if (mission.verification === 'visit')
+      throw new PublicError('Open the mission link to complete this automatic visit.');
     // Validate before any paid X lookup. Browser-supplied status and points are never accepted.
     const id = randomUUID();
     const proposed = (
@@ -439,7 +443,7 @@ export async function buildServer(
         ),
       )
     ).submissions[0];
-    if (mission.verification && mission.verification !== 'manual') {
+    if (mission.verification === 'x_post' || mission.verification === 'x_reply') {
       const result = await x.verifyPost(
         mission,
         proposed.url,
@@ -487,6 +491,98 @@ export async function buildServer(
         throw new PublicError('This evidence has already been submitted.', 409);
       }
       await database.audit(member.wallet, 'submit', id);
+      return { ok: true };
+    });
+  });
+  app.post('/api/visits/start', async (req) => {
+    const { member, session } = await requireMember(req, true);
+    const { missionId } = z.object({ missionId: z.string().min(1).max(80) }).parse(req.body);
+    return database.transaction(async () => {
+      if ((await database.session(session.id))?.wallet !== member.wallet)
+        throw new PublicError('Your session ended. Sign in again.', 401);
+      const state = await database.state(member.wallet);
+      const mission = state.missions.find((m) => m.id === missionId);
+      if (!mission) throw new PublicError('Mission not found.', 404);
+      if (mission.verification !== 'visit' || !mission.actionUrl)
+        throw new PublicError('This mission does not use automatic visits.');
+      if (!canSubmit(state, mission.id))
+        throw new PublicError('This mission is already completed or closed.', 409);
+      const token = random();
+      const now = Date.now();
+      await database.db.prepare('DELETE FROM mission_visits WHERE expires<?').run(now);
+      await database.db
+        .prepare(
+          'DELETE FROM mission_visits WHERE wallet=? AND mission_id=? AND submission_id IS NULL',
+        )
+        .run(member.wallet, mission.id);
+      await database.db
+        .prepare(
+          'INSERT INTO mission_visits(id,wallet,mission_id,mission_version,started_at,expires) VALUES(?,?,?,?,?,?)',
+        )
+        .run(
+          digest(token),
+          member.wallet,
+          mission.id,
+          digest(JSON.stringify(mission)),
+          now,
+          now + 10 * 60 * 1000,
+        );
+      await database.audit(member.wallet, 'visit_start', mission.id);
+      return { token, url: mission.actionUrl, waitMs: visitWaitMs };
+    });
+  });
+  app.post('/api/visits/complete', async (req) => {
+    const { member, session } = await requireMember(req, true);
+    const { missionId, token } = z
+      .object({ missionId: z.string().min(1).max(80), token: z.string().regex(/^[a-f0-9]{64}$/) })
+      .parse(req.body);
+    return database.transaction(async () => {
+      if ((await database.session(session.id))?.wallet !== member.wallet)
+        throw new PublicError('Your session ended. Sign in again.', 401);
+      const visit = await database.db
+        .prepare('SELECT * FROM mission_visits WHERE id=? AND wallet=? AND mission_id=?')
+        .get(digest(token), member.wallet, missionId);
+      if (!visit || Number(visit.expires) < Date.now())
+        throw new PublicError('This visit expired. Open the mission link again.', 409);
+      if (visit.submission_id) return { ok: true };
+      if (Date.now() - Number(visit.started_at) < visitWaitMs)
+        throw new PublicError('Wait 3 seconds after opening the mission link.', 409);
+      const state = await database.state(member.wallet);
+      const mission = state.missions.find((m) => m.id === missionId);
+      if (!mission || digest(JSON.stringify(mission)) !== visit.mission_version)
+        throw new PublicError('The mission changed. Reopen it and start a new visit.', 409);
+      if (mission.verification !== 'visit' || !mission.actionUrl || !canSubmit(state, missionId))
+        throw new PublicError('This mission is already completed or closed.', 409);
+      if (state.submissions.length >= 2000)
+        throw new PublicError('Your contribution record is full. Contact the Keepers.');
+      const now = new Date().toISOString();
+      const id = randomUUID();
+      const reason = 'The mission link was opened and the 3-second visit was completed.';
+      const submission = {
+        id,
+        missionId,
+        missionTitle: mission.title,
+        points: mission.points,
+        url: mission.actionUrl,
+        description: 'Completed an automatic link visit.',
+        createdAt: now,
+        status: 'verified' as const,
+        reason,
+        reviewedAt: now,
+        decisions: [{ status: 'verified' as const, reason, at: now }],
+        wallet: getAddress(member.wallet),
+        xUsername: member.x_username || '',
+        verificationSource: 'Automatic link visit: 3-second server timer.',
+      };
+      await database.putSubmission(
+        submission,
+        member.wallet,
+        `visit:${missionId}:${member.wallet}`,
+      );
+      await database.db
+        .prepare('UPDATE mission_visits SET submission_id=? WHERE id=?')
+        .run(id, digest(token));
+      await database.audit(member.wallet, 'visit_complete', id);
       return { ok: true };
     });
   });

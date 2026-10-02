@@ -246,8 +246,14 @@ export function ContributionPaths() {
             </div>
           </motion.div>
         </AnimatePresence>
-        <Link to={`/app?category=${item.category}`} className="atlas-path-action">
-          Explore {item.category.toLowerCase()} missions <ArrowUpRightIcon size={22} />
+        <Link
+          to={item.category === 'Testing' ? '/app' : `/app?category=${item.category}`}
+          className="atlas-path-action"
+        >
+          {item.category === 'Testing'
+            ? 'Explore missions'
+            : `Explore ${item.category.toLowerCase()} missions`}{' '}
+          <ArrowUpRightIcon size={22} />
         </Link>
       </div>
     </div>

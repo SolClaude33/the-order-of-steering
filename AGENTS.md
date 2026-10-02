@@ -30,6 +30,8 @@ Node 22.x, mínimo 22.16. Comandos: `npm ci`, `npm run dev` (5173/5174), `npm ru
 
 Exigir wallet y X para entregas; Keepers mediante allowlist del servidor. No aceptar puntos, aprobaciones o identidad del cliente. Pendientes no conceden puntos; decisiones finales no se repiten; editar misiones conserva puntos históricos. No importar registros antiguos como puntos autenticados.
 
+Visitas automáticas: enlace HTTPS configurado por Keeper y espera de tres segundos en servidor, con intentos persistidos en mission_visits. Una recompensa por wallet/misión, sin comprobar follows ni consultar X. Nuevos métodos deben conservar esa distinción y la autorización del servidor.
+
 El tablero real empieza vacío; no regenerar misiones de ejemplo. Su retirada es una migración única auditada que preserva entregas. Las pruebas cargan ejemplos explícitos; `ORDER_TEST_EMPTY_BOARD=1` con `npm run test:e2e -- --grep @empty-board` valida el recorrido desde cero.
 
 ## Desarrollo y entrega

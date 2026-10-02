@@ -445,8 +445,7 @@
   align-items: start;
 }
 .identity-panel,
-.profile-side-note,
-.profile-name-panel {
+.profile-side-note {
   border: 1px solid var(--border);
   border-radius: 9px;
   background: var(--surface);
@@ -617,33 +616,32 @@
   font-size: 12px;
   margin-top: 15px;
 }
-.profile-name-panel {
-  padding: 25px 28px;
-  margin-top: 24px;
-}
-.profile-name-panel h2 {
-  font-size: 16px;
-}
-.profile-name-panel .profile-form {
-  max-width: none;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: end;
-  gap: 20px;
-}
-.profile-name-panel label {
-  flex: 1;
-  min-width: 220px;
-}
-.profile-name-panel input {
-  width: 100%;
-}
 .mission-connect-gate {
   margin-top: 25px;
   padding: 26px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--raised);
+}
+.mission-visit-panel {
+  margin-top: 24px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--raised);
+}
+.mission-visit-panel h3 {
+  margin-bottom: 10px;
+}
+.mission-visit-panel p {
+  margin-bottom: 18px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.mission-visit-panel .field-help,
+.mission-visit-panel .form-error {
+  margin-top: 16px;
+  margin-bottom: 0;
 }
 .mission-connect-gate > svg {
   color: var(--soft);
@@ -909,12 +907,6 @@
   .connection-content .button {
     font-size: 11px;
     padding: 12px 13px;
-  }
-  .profile-name-panel {
-    padding: 22px;
-  }
-  .profile-name-panel label {
-    min-width: 150px;
   }
   .app-professional .page-heading > .button {
     font-size: 10px;

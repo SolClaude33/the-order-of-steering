@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   ArrowRightIcon,
@@ -153,13 +153,7 @@ export function Connections({ compact = false }: { compact?: boolean }) {
 export function MemberProfile() {
   const auth = useAuth(),
     location = useLocation();
-  const [name, setName] = useState(auth.profile?.name || ''),
-    [error, setError] = useState(''),
-    [savedName, setSavedName] = useState(''),
-    [busy, setBusy] = useState(false);
-  useEffect(() => {
-    setName(auth.profile?.name || '');
-  }, [auth.profile?.wallet, auth.profile?.name]);
+  const [error, setError] = useState('');
   const outcome = new URLSearchParams(location.search).get('connection');
   const outcomes: Record<string, string> = {
     success: 'Your X account is connected. You can now submit missions.',
@@ -187,6 +181,11 @@ export function MemberProfile() {
           </button>
         )}
       </div>
+      {error && (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      )}
       <div className="profile-overview">
         <div className="profile-identity">
           <MemberAvatar size={72} />
@@ -246,60 +245,6 @@ export function MemberProfile() {
           </Link>
         </aside>
       </div>
-      {auth.profile && (
-        <section className="profile-name-panel">
-          <h2>Profile details</h2>
-          <form
-            className="profile-form"
-            noValidate
-            onSubmit={async (e) => {
-              e.preventDefault();
-              setBusy(true);
-              setError('');
-              setSavedName('');
-              if (!name.trim() || name.trim().length > 40) {
-                setError('Enter a display name of 1 to 40 characters.');
-                setBusy(false);
-                return;
-              }
-              try {
-                await auth.request('/profile', { name: name.trim() });
-                await auth.refresh();
-                setSavedName(`${auth.profile!.wallet}:${name.trim()}`);
-              } catch (e) {
-                setError((e as Error).message);
-              } finally {
-                setBusy(false);
-              }
-            }}
-          >
-            <label htmlFor="member-name">
-              Display name
-              <input
-                id="member-name"
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  setSavedName('');
-                }}
-                maxLength={40}
-                required
-              />
-            </label>
-            <button className="button button-outline" disabled={busy}>
-              {busy ? 'Saving…' : 'Save profile'}
-            </button>
-            {savedName === `${auth.profile.wallet}:${name.trim()}` && (
-              <span role="status">Profile saved.</span>
-            )}
-            {error && (
-              <p className="form-error" role="alert">
-                {error}
-              </p>
-            )}
-          </form>
-        </section>
-      )}
     </>
   );
 }

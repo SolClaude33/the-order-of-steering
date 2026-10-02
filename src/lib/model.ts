@@ -25,7 +25,8 @@ export type Mission = {
   requirements: string[];
   deadline: string;
   archived: boolean;
-  verification?: 'manual' | 'x_post' | 'x_reply';
+  verification?: 'manual' | 'x_post' | 'x_reply' | 'visit';
+  actionUrl?: string;
   targetPostId?: string;
   requiredText?: string;
 };
@@ -287,6 +288,15 @@ export function validateMission(mission: Mission): void {
     throw new Error('Points must be a whole number between 1 and 1000.');
   if (!mission.effort.trim() || mission.effort.length > 40)
     throw new Error('Enter the estimated time.');
+  if (mission.verification === 'visit' && !mission.actionUrl?.trim())
+    throw new Error('Add a mission link for an automatic visit.');
+  if (
+    mission.actionUrl &&
+    (mission.actionUrl.length > 2048 ||
+      !normalizeEvidence(mission.actionUrl) ||
+      new URL(mission.actionUrl.trim()).protocol !== 'https:')
+  )
+    throw new Error('Use a full mission link beginning with https://.');
   if (
     !mission.requirements.length ||
     mission.requirements.length > 8 ||
@@ -308,6 +318,7 @@ export function saveMission(state: State, mission: Mission): State {
     title: mission.title.trim(),
     description: mission.description.trim(),
     effort: mission.effort.trim(),
+    actionUrl: mission.actionUrl?.trim() || undefined,
     requirements: mission.requirements.map((r) => r.trim()),
   };
   const exists = state.missions.some((m) => m.id === mission.id);

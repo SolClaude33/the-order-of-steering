@@ -82,18 +82,24 @@ test('contribution paths support keyboard selection and open the matching missio
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  for (const [label, category] of [
-    ['Tell the story.', 'Content'],
-    ['Open the door.', 'Community'],
-    ['Make it better.', 'Testing'],
+  for (const [label, pathCategory, category] of [
+    ['Tell the story.', 'Content', 'Content'],
+    ['Open the door.', 'Community', 'Community'],
+    ['Make it better.', 'Testing', 'All'],
   ]) {
     await page.goto('/');
     await page.getByRole('tab').filter({ hasText: label }).click();
     await expect(page.getByRole('tabpanel')).toHaveAttribute(
       'aria-labelledby',
-      `atlas-tab-${category}`,
+      `atlas-tab-${pathCategory}`,
     );
-    await page.getByRole('link', { name: `Explore ${category.toLowerCase()} missions` }).click();
+    await page
+      .getByRole('link', {
+        name:
+          category === 'All' ? 'Explore missions' : `Explore ${category.toLowerCase()} missions`,
+        exact: true,
+      })
+      .click();
     await expect(
       page
         .getByRole('group', { name: 'Filter by category' })
@@ -104,8 +110,24 @@ test('contribution paths support keyboard selection and open the matching missio
       .locator('.mission-card .mission-category')
       .allTextContents();
     expect(missionCategories.length).toBeGreaterThan(0);
-    expect(missionCategories.every((value) => value.trim() === category)).toBe(true);
+    if (category !== 'All')
+      expect(missionCategories.every((value) => value.trim() === category)).toBe(true);
   }
+  await page.goto('/#/app?category=Testing');
+  const filters = page.getByRole('group', { name: 'Filter by category' });
+  await expect(filters.getByRole('button', { name: 'All', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(filters.getByRole('button')).toHaveText(['All', 'Content', 'Community']);
+  await expect(page.locator('.route-content')).toHaveCSS('opacity', '1');
+  await filters.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: '.local/captures/mission-filters-desktop.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await noOverflow(page);
+  await filters.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: '.local/captures/mission-filters-mobile.png' });
+  await page.setViewportSize({ width: 1440, height: 960 });
   await page.goto('/');
   await page.getByRole('tab').filter({ hasText: 'Tell the story.' }).focus();
   await page.keyboard.press('ArrowDown');
@@ -210,14 +232,6 @@ test('a real wallet signature creates a persistent profile; wallet alone cannot 
   await expect(page.locator('.membership-badge')).toHaveText('Complete your profile');
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Wallet authenticated' })).toBeVisible();
-  await page.getByLabel('Display name').fill('');
-  await page.getByRole('button', { name: 'Save profile' }).click();
-  await expect(page.getByRole('alert')).toContainText(
-    'Enter a display name of 1 to 40 characters.',
-  );
-  await page.getByLabel('Display name').fill('Connected Member');
-  await page.getByRole('button', { name: 'Save profile' }).click();
-  await expect(page.getByText('Profile saved.')).toBeVisible();
   await page.goto('/#/app');
   await openMission(page, 'Share the vision of the Order');
   await expect(
@@ -242,15 +256,13 @@ test('X name, handle and photo appear across the app, persist on reload and reco
     }),
   );
   await signIn(page, '4');
-  await page.getByLabel('Display name').fill('My custom name');
-  await page.getByRole('button', { name: 'Save profile' }).click();
-  await expect(page.getByText('Profile saved.')).toBeVisible();
   await linkFixtureX(page, '3003');
   await expect(page.locator('.profile-identity h2')).toHaveText('Order Member');
   await expect(page.locator('.profile-identity p')).toHaveText('@order_member_3003');
   await expect(page.locator('.profile-link strong')).toHaveText('Order Member');
   await expect(page.locator('.profile-link small')).toHaveText('@order_member_3003');
-  await expect(page.getByLabel('Display name')).toHaveValue('My custom name');
+  await expect(page.getByLabel('Display name')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Save profile' })).toHaveCount(0);
   await expect(photos).toHaveCount(3);
   for (const photo of await photos.all()) await expect(photo).toHaveAttribute('src', avatar);
   await expect(page.locator('.sidebar-brand img')).toHaveAttribute('src', fallback);
@@ -366,6 +378,13 @@ test('wallet plus X enables server evidence, authorized reviews, points and pers
   await page
     .getByLabel('Requirements', { exact: true })
     .fill('Publish an original contribution.\nSubmit a link with a useful explanation.');
+  await page.getByLabel('Verification', { exact: true }).selectOption('x_reply');
+  await page.getByLabel('Target X post ID', { exact: true }).fill('https://x.com/orderofsteering');
+  await page.getByRole('button', { name: 'Publish mission' }).click();
+  await expect(page.getByRole('dialog').getByRole('alert')).toContainText(
+    'Enter the numeric post ID to verify a reply.',
+  );
+  await page.getByLabel('Verification', { exact: true }).selectOption('manual');
   await page.getByRole('button', { name: 'Publish mission' }).click();
   await expect(page.getByRole('dialog')).toBeHidden();
   await page.getByRole('link', { name: 'Missions', exact: true }).click();
@@ -395,6 +414,92 @@ test('wallet plus X enables server evidence, authorized reviews, points and pers
     () => getComputedStyle(document.querySelector('.route-content')!).opacity === '1',
   );
   await page.screenshot({ path: '.local/captures/profile-connected-desktop.png', fullPage: true });
+  expect(errors).toEqual([]);
+});
+
+test('@automatic-visit a Keeper publishes an X account visit and a member receives persistent points after three seconds', async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.context().route('https://x.com/orderofsteering', (route) =>
+    route.fulfill({
+      contentType: 'text/html',
+      body: '<html lang="en"><title>Order X account</title><body>Order X account fixture</body></html>',
+    }),
+  );
+  await signIn(page, '1');
+  await linkFixtureX(page, '2002');
+  await page.getByRole('link', { name: /^Keepers\b/ }).click();
+  await page.getByRole('button', { name: 'Create mission', exact: true }).click();
+  const title = 'Visit our X account';
+  await page.getByLabel('Title', { exact: true }).fill(title);
+  await page
+    .getByLabel('Description', { exact: true })
+    .fill('Discover The Order of Steering on X and visit our official account.');
+  await page.getByLabel('Category', { exact: true }).selectOption('Community');
+  await page.getByLabel('Points', { exact: true }).fill('100');
+  await page.getByLabel('Estimated time', { exact: true }).fill('1 min');
+  await page
+    .getByLabel('Requirements', { exact: true })
+    .fill('Open our official X account using the mission button.');
+  await page.getByLabel('Verification', { exact: true }).selectOption('visit');
+  await page.getByRole('button', { name: 'Publish mission' }).click();
+  await expect(page.getByRole('dialog').getByRole('alert')).toHaveText(
+    'Add a mission link for an automatic visit.',
+  );
+  await page.getByLabel('Mission link', { exact: true }).fill('https://x.com/orderofsteering');
+  await noOverflow(page);
+  await page.getByLabel('Verification', { exact: true }).scrollIntoViewIfNeeded();
+  await page.screenshot({ path: '.local/captures/visit-editor-desktop.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await noOverflow(page);
+  await page.getByLabel('Verification', { exact: true }).scrollIntoViewIfNeeded();
+  await page.screenshot({ path: '.local/captures/visit-editor-mobile.png' });
+  await page.getByRole('button', { name: 'Publish mission' }).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await page.goto('/#/app/profile');
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  page = await page.context().newPage();
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.setViewportSize({ width: 390, height: 844 });
+  await signIn(page, '5');
+  await linkFixtureX(page, '6006');
+  await page.getByRole('link', { name: 'Missions', exact: true }).click();
+  await openMission(page, title);
+  await expect(page.getByRole('button', { name: 'Submit evidence', exact: true })).toHaveCount(0);
+  await noOverflow(page);
+  await page.getByRole('button', { name: 'Open link & start visit' }).scrollIntoViewIfNeeded();
+  await page.screenshot({ path: '.local/captures/visit-mission-mobile.png' });
+  const popupPromise = page.waitForEvent('popup');
+  const started = Date.now();
+  await page.getByRole('button', { name: 'Open link & start visit' }).click();
+  const popup = await popupPromise;
+  await expect(popup).toHaveURL('https://x.com/orderofsteering');
+  await expect(
+    page.getByRole('dialog').getByText('Visit in progress', { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('dialog').getByText('Your visit is complete.', { exact: false }),
+  ).toBeVisible();
+  expect(Date.now() - started).toBeGreaterThanOrEqual(3000);
+  await expect(page.getByRole('dialog').getByText('Verified', { exact: true })).toBeVisible();
+  await popup.close();
+  await page.getByRole('button', { name: 'Close dialog' }).click();
+  await expect(page.locator('.stats-grid')).toContainText('100pts');
+  await page.reload();
+  await expect(page.locator('.stats-grid')).toContainText('100pts');
+  await page.getByLabel('Filter by availability').selectOption('all');
+  await openMission(page, title);
+  await expect(page.getByRole('button', { name: 'Open link & start visit' })).toHaveCount(0);
+  await page.setViewportSize({ width: 1440, height: 960 });
+  await noOverflow(page);
+  await expect(page.locator('.route-content')).toHaveCSS('opacity', '1');
+  await page.screenshot({ path: '.local/captures/visit-completed-desktop.png' });
+  await page.getByRole('button', { name: 'Close dialog' }).click();
+  await page.getByRole('link', { name: 'My journey', exact: true }).click();
+  await expect(page.locator('.history-list')).toContainText('Verified');
+  await expect(page.locator('.stats-grid')).toContainText('100pts');
   expect(errors).toEqual([]);
 });
 test('previous browser records are preserved but cannot inject points into an authenticated profile', async ({

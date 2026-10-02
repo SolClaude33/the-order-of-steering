@@ -37,7 +37,7 @@ import {
   formatDate,
 } from '../components/Primitives';
 import { useStore } from '../lib/store';
-import { canSubmit, categories, isExpired, totalPoints } from '../lib/model';
+import { canSubmit, categories, isExpired, totalPoints, validateMission } from '../lib/model';
 import type { Category, Mission, Status, Submission } from '../lib/model';
 import { useAuth, shortWallet } from '../lib/auth';
 import { ConnectDialog, ConnectionBanner, MemberProfile } from '../components/MemberConnections';
@@ -48,6 +48,7 @@ const categoryIcons: Record<Category, Icon> = {
   Community: UsersThreeIcon,
   Testing: BugIcon,
 };
+const boardCategories = categories.filter((category) => category !== 'Testing');
 const navItems = [
   { to: '/app', label: 'Missions', icon: CompassIcon, end: true },
   { to: '/app/history', label: 'My journey', icon: ScrollIcon },
@@ -146,7 +147,9 @@ function MissionCard({ mission, onOpen }: { mission: Mission; onOpen: () => void
         <ShieldCheckIcon size={13} />
         {mission.verification === 'x_post' || mission.verification === 'x_reply'
           ? 'X check + Keepers review'
-          : 'Keepers review'}
+          : mission.verification === 'visit'
+            ? 'Automatic visit · 3 seconds'
+            : 'Keepers review'}
       </span>
       <div className="mission-meta">
         <span>
@@ -171,6 +174,87 @@ function MissionCard({ mission, onOpen }: { mission: Mission; onOpen: () => void
         </button>
       </div>
     </motion.article>
+  );
+}
+function VisitAction({ mission, notify }: { mission: Mission; notify: (text: string) => void }) {
+  const auth = useAuth();
+  const { refresh } = useStore();
+  const [starting, setStarting] = useState(false);
+  const [attempt, setAttempt] = useState<{ token: string; readyAt: number } | null>(null);
+  const [seconds, setSeconds] = useState(3);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    if (!attempt) return;
+    let active = true;
+    const interval = window.setInterval(
+      () => setSeconds(Math.max(0, Math.ceil((attempt.readyAt - Date.now()) / 1000))),
+      200,
+    );
+    const timer = window.setTimeout(
+      async () => {
+        try {
+          await auth.request('/visits/complete', { missionId: mission.id, token: attempt.token });
+          if (!active) return;
+          await refresh();
+          notify(`Visit completed. ${mission.points} points added to your journey.`);
+        } catch (e) {
+          if (active) {
+            setError((e as Error).message);
+            setAttempt(null);
+          }
+        }
+      },
+      Math.max(0, attempt.readyAt - Date.now()),
+    );
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+      window.clearTimeout(timer);
+    };
+  }, [attempt, auth.request, mission.id, mission.points, notify, refresh]);
+  async function start() {
+    setError('');
+    const popup = window.open('about:blank', '_blank');
+    if (!popup) {
+      setError('Allow a new tab for this site, then open the mission link again.');
+      return;
+    }
+    popup.opener = null;
+    setStarting(true);
+    try {
+      const result = await auth.request<{ token: string; url: string; waitMs: number }>(
+        '/visits/start',
+        { missionId: mission.id },
+      );
+      popup.location.replace(result.url);
+      setSeconds(3);
+      setAttempt({ token: result.token, readyAt: Date.now() + result.waitMs + 150 });
+    } catch (e) {
+      popup.close();
+      setError((e as Error).message);
+    } finally {
+      setStarting(false);
+    }
+  }
+  return (
+    <div className="mission-visit-panel">
+      <h3>Visit to complete</h3>
+      <p>Open the link. Your visit is approved automatically after 3 seconds.</p>
+      <button className="button button-primary" onClick={start} disabled={starting || !!attempt}>
+        {starting ? 'Opening link…' : attempt ? 'Visit in progress' : 'Open link & start visit'}
+        <ArrowUpRightIcon size={18} />
+      </button>
+      {attempt && (
+        <p className="field-help" role="status">
+          {seconds > 0 ? `Recording your visit in ${seconds}s…` : 'Recording your points…'}
+        </p>
+      )}
+      {error && (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      )}
+    </div>
   );
 }
 function MissionDialog({
@@ -224,6 +308,16 @@ function MissionDialog({
           <li key={r}>{r}</li>
         ))}
       </ol>
+      {mission.actionUrl && mission.verification !== 'visit' && (
+        <a
+          className="button button-outline"
+          href={mission.actionUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Open mission link <ArrowUpRightIcon size={18} />
+        </a>
+      )}
       <p className="muted text-small">
         Closes on {formatDate(mission.deadline)}. Both wallet and X connections are required.
       </p>
@@ -256,6 +350,8 @@ function MissionDialog({
             <ArrowRightIcon size={18} />
           </button>
         </div>
+      ) : eligible && mission.verification === 'visit' ? (
+        <VisitAction mission={mission} notify={notify} />
       ) : eligible ? (
         <form className="evidence-form" onSubmit={submit} noValidate>
           <h3>Submit your evidence</h3>
@@ -317,7 +413,9 @@ function MissionDialog({
           <p>
             {mission.archived || isExpired(mission)
               ? 'This mission is closed to new submissions.'
-              : 'Your evidence has been recorded. Find the decision and its reasons in My journey.'}
+              : mission.verification === 'visit'
+                ? 'Your visit is complete. Points are recorded in My journey.'
+                : 'Your evidence has been recorded. Find the decision and its reasons in My journey.'}
           </p>
         </div>
       )}
@@ -330,7 +428,7 @@ function Missions({ notify }: { notify: (text: string) => void }) {
   const location = useLocation();
   const initialCategory = new URLSearchParams(location.search).get('category');
   const [category, setCategory] = useState<string>(
-    categories.includes(initialCategory as Category) ? initialCategory! : 'All',
+    boardCategories.some((value) => value === initialCategory) ? initialCategory! : 'All',
   );
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('available');
@@ -407,7 +505,7 @@ function Missions({ notify }: { notify: (text: string) => void }) {
         </div>
         <div className="mission-filters">
           <div className="category-tabs" role="group" aria-label="Filter by category">
-            {['All', ...categories].map((c) => (
+            {['All', ...boardCategories].map((c) => (
               <button
                 key={c}
                 className={category === c ? 'active' : ''}
@@ -678,15 +776,30 @@ function MissionEditor({
   const [error, setError] = useState('');
   async function submit(e: FormEvent) {
     e.preventDefault();
+    setError('');
     setBusy(true);
     try {
-      await save({
+      const verification = draft.verification || 'manual';
+      const clean = {
         ...draft,
+        verification,
+        targetPostId: verification === 'x_reply' ? (draft.targetPostId || '').trim() : undefined,
+        requiredText:
+          verification === 'x_post' || verification === 'x_reply'
+            ? draft.requiredText?.trim()
+            : undefined,
+        actionUrl: draft.actionUrl?.trim() || undefined,
         requirements: requirements
           .split('\n')
           .map((r) => r.trim())
           .filter(Boolean),
-      });
+      };
+      validateMission(clean);
+      if (verification === 'x_reply' && !/^\d+$/.test(clean.targetPostId || ''))
+        throw new Error(
+          'Enter the numeric post ID to verify a reply. To verify an account follow, choose Keepers review.',
+        );
+      await save(clean);
       notify(
         mission
           ? 'Mission updated. Existing submissions retain their original points.'
@@ -701,7 +814,7 @@ function MissionEditor({
   }
   return (
     <Modal title={mission ? 'Edit mission' : 'Create a mission'} onClose={onClose} wide>
-      <form className="editor-form" onSubmit={submit} noValidate>
+      <form className="editor-form" onSubmit={submit} onChange={() => setError('')} noValidate>
         <label htmlFor="mission-title">
           Title
           <input
@@ -788,33 +901,64 @@ function MissionEditor({
         <span id="requirements-help" className="field-help">
           One requirement per line. Up to 8 requirements.
         </span>
+        <label htmlFor="mission-link">
+          Mission link
+          <input
+            id="mission-link"
+            type="url"
+            placeholder="https://x.com/orderofsteering"
+            value={draft.actionUrl || ''}
+            onChange={(e) => setDraft({ ...draft, actionUrl: e.target.value })}
+            maxLength={2048}
+            aria-describedby="mission-link-help"
+            required={draft.verification === 'visit'}
+          />
+        </label>
+        <span id="mission-link-help" className="field-help">
+          Members can open this link from the mission. Required for automatic visits; optional for
+          other missions.
+        </span>
         <label htmlFor="mission-verification">
           Verification
           <select
             id="mission-verification"
+            aria-label="Verification"
+            aria-describedby="mission-verification-help"
             value={draft.verification || 'manual'}
             onChange={(e) =>
               setDraft({ ...draft, verification: e.target.value as Mission['verification'] })
             }
           >
             <option value="manual">Keepers review</option>
+            <option value="visit">Visit link — automatic after 3 seconds</option>
             <option value="x_post">X post ownership + Keepers review</option>
             <option value="x_reply">X reply to target + Keepers review</option>
           </select>
         </label>
+        <span id="mission-verification-help" className="field-help">
+          Automatic visits reward opening the link. For account follows, choose Keepers review. X
+          post and reply checks verify posts from the connected account.
+        </span>
         {draft.verification === 'x_reply' && (
-          <label htmlFor="mission-target">
-            Target X post ID
-            <input
-              id="mission-target"
-              inputMode="numeric"
-              value={draft.targetPostId || ''}
-              onChange={(e) => setDraft({ ...draft, targetPostId: e.target.value })}
-              required
-            />
-          </label>
+          <>
+            <label htmlFor="mission-target">
+              Target X post ID
+              <input
+                id="mission-target"
+                inputMode="numeric"
+                placeholder="e.g. 1234567890123456789"
+                aria-describedby="mission-target-help"
+                value={draft.targetPostId || ''}
+                onChange={(e) => setDraft({ ...draft, targetPostId: e.target.value })}
+                required
+              />
+            </label>
+            <span id="mission-target-help" className="field-help">
+              Use the number after /status/ in a post URL. A profile URL is not a post ID.
+            </span>
+          </>
         )}
-        {draft.verification && draft.verification !== 'manual' && (
+        {(draft.verification === 'x_post' || draft.verification === 'x_reply') && (
           <label htmlFor="mission-required-text">
             Required text in the X post (optional)
             <input

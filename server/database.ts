@@ -29,6 +29,7 @@ const schema = [
   'CREATE TABLE IF NOT EXISTS oauth(state TEXT PRIMARY KEY, session TEXT NOT NULL, wallet TEXT NOT NULL, verifier TEXT NOT NULL, expires INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS token_refresh_locks(wallet TEXT PRIMARY KEY, owner TEXT NOT NULL, expires INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS missions(id TEXT PRIMARY KEY, data TEXT NOT NULL)',
+  'CREATE TABLE IF NOT EXISTS mission_visits(id TEXT PRIMARY KEY, wallet TEXT NOT NULL REFERENCES members(wallet), mission_id TEXT NOT NULL, mission_version TEXT NOT NULL, started_at INTEGER NOT NULL, expires INTEGER NOT NULL, submission_id TEXT)',
   'CREATE TABLE IF NOT EXISTS submissions(id TEXT PRIMARY KEY, wallet TEXT NOT NULL REFERENCES members(wallet), evidence TEXT NOT NULL UNIQUE, data TEXT NOT NULL)',
   'CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY, actor TEXT NOT NULL, action TEXT NOT NULL, subject TEXT NOT NULL, at TEXT NOT NULL)',
   'CREATE TABLE IF NOT EXISTS schema_migrations(id TEXT PRIMARY KEY, applied_at TEXT NOT NULL)',
@@ -173,12 +174,12 @@ export class OrderDatabase {
       )
       .run(mission.id, JSON.stringify(mission));
   }
-  async putSubmission(submission: Submission, wallet: string) {
+  async putSubmission(submission: Submission, wallet: string, evidenceKey = submission.url) {
     await this.db
       .prepare(
         'INSERT INTO submissions(id,wallet,evidence,data) VALUES(?,?,?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data',
       )
-      .run(submission.id, wallet, submission.url, JSON.stringify(submission));
+      .run(submission.id, wallet, evidenceKey, JSON.stringify(submission));
   }
   async audit(actor: string, action: string, subject: string) {
     await this.db
@@ -219,5 +220,6 @@ export class OrderDatabase {
     await this.db.prepare('DELETE FROM sessions WHERE expires<?').run(now);
     await this.db.prepare('DELETE FROM challenges WHERE expires<?').run(now);
     await this.db.prepare('DELETE FROM oauth WHERE expires<?').run(now);
+    await this.db.prepare('DELETE FROM mission_visits WHERE expires<?').run(now);
   }
 }
