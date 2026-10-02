@@ -153,6 +153,7 @@ export async function buildServer(
                   id: member.x_id,
                   username: member.x_username,
                   name: member.x_name,
+                  avatarUrl: member.x_avatar,
                   linkedAt: member.linked_at,
                 }
               : null,
@@ -373,12 +374,13 @@ export async function buildServer(
         if ((await database.session(session.id))?.wallet !== session.wallet) return 'expired';
         await database.db
           .prepare(
-            'UPDATE members SET x_id=?,x_username=?,x_name=?,tokens=?,linked_at=? WHERE wallet=?',
+            'UPDATE members SET x_id=?,x_username=?,x_name=?,x_avatar=?,tokens=?,linked_at=? WHERE wallet=?',
           )
           .run(
             account.id,
             account.username,
             account.name,
+            account.avatarUrl,
             encrypt(tokens, config.key),
             new Date().toISOString(),
             session.wallet!,

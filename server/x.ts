@@ -86,11 +86,32 @@ export class XClient {
       );
     return response.json();
   }
-  async me(token: string): Promise<{ id: string; username: string; name: string }> {
-    const response = await this.get('users/me', token);
+  async me(
+    token: string,
+  ): Promise<{ id: string; username: string; name: string; avatarUrl: string | null }> {
+    const response = await this.get('users/me?user.fields=profile_image_url', token);
     if (!response.data?.id || !response.data?.username)
       throw new PublicError('X could not confirm your account.', 502);
-    return response.data;
+    let avatarUrl: string | null = null;
+    try {
+      const image = new URL(response.data.profile_image_url);
+      if (
+        image.protocol === 'https:' &&
+        ['pbs.twimg.com', 'abs.twimg.com'].includes(image.hostname) &&
+        !image.username &&
+        !image.password &&
+        !image.port
+      )
+        avatarUrl = image.href;
+    } catch {
+      /* An absent image must not prevent account linking. */
+    }
+    return {
+      id: response.data.id,
+      username: response.data.username,
+      name: response.data.name || response.data.username,
+      avatarUrl,
+    };
   }
   async verifyPost(mission: Mission, url: string, userId: string, token: string) {
     const parsed = new URL(url);

@@ -21,7 +21,13 @@ export type SessionInfo = {
     chainId: number;
     name: string;
     createdAt: string;
-    x: null | { id: string; username: string; name: string; linkedAt: string };
+    x: null | {
+      id: string;
+      username: string;
+      name: string;
+      avatarUrl: string | null;
+      linkedAt: string;
+    };
   };
 };
 export const blankSession: SessionInfo = {

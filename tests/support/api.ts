@@ -14,12 +14,19 @@ const xFetch = (async (input: string | URL | Request, init?: RequestInit) => {
       scope: 'users.read tweet.read offline.access',
     });
   }
-  if (url.endsWith('/users/me')) {
+  if (new URL(url).pathname === '/2/users/me') {
     const id = String((init?.headers as Record<string, string>).Authorization).replace(
       'Bearer ',
       '',
     );
-    return Response.json({ data: { id, username: 'order_member_' + id, name: 'Order Member' } });
+    return Response.json({
+      data: {
+        id,
+        username: 'order_member_' + id,
+        name: 'Order Member',
+        profile_image_url: `https://pbs.twimg.com/profile_images/${id}/test-avatar.jpg`,
+      },
+    });
   }
   return Response.json({ error: 'No fixture for this endpoint' }, { status: 404 });
 }) as typeof fetch;

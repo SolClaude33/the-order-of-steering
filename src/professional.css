@@ -387,6 +387,8 @@
   min-width: 0;
 }
 .profile-identity img {
+  flex-shrink: 0;
+  object-fit: cover;
   border-radius: 50%;
   border: 3px solid var(--raised);
   width: 72px;
@@ -397,6 +399,10 @@
   font-weight: 500;
   letter-spacing: -0.5px;
   margin: 0 0 5px;
+  overflow-wrap: anywhere;
+}
+.profile-identity > div {
+  min-width: 0;
 }
 .profile-identity .page-kicker {
   font-size: 8px;

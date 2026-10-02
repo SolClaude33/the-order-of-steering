@@ -1038,6 +1038,7 @@ p {
   padding: 19px 4px 0;
 }
 .profile-link img {
+  flex-shrink: 0;
   border-radius: 50%;
   width: 35px;
   height: 35px;
@@ -1060,6 +1061,9 @@ p {
 .profile-link small {
   font-size: 10px;
   color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .profile-link > svg {
   color: var(--muted);
@@ -1104,6 +1108,7 @@ p {
 }
 .topbar-avatar img {
   border-radius: 50%;
+  object-fit: cover;
 }
 .app-main {
   max-width: 1340px;

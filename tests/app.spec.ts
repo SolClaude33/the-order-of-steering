@@ -227,6 +227,55 @@ test('a real wallet signature creates a persistent profile; wallet alone cannot 
   await expect(page.getByRole('heading', { name: 'Your place in the Order' })).toBeVisible();
   expect(errors).toEqual([]);
 });
+test('X name, handle and photo appear across the app, persist on reload and recover from an unavailable image', async ({
+  page,
+}) => {
+  const avatar = 'https://pbs.twimg.com/profile_images/3003/test-avatar.jpg';
+  const fallback = '/assets/branding/pfp-approved-v01.png';
+  const photos = page.locator('.profile-identity img, .profile-link img, .topbar-avatar img');
+  await page.route('https://pbs.twimg.com/**', (route) =>
+    route.fulfill({
+      contentType: 'image/svg+xml',
+      body: '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><rect width="160" height="160" rx="80" fill="#465769"/><circle cx="80" cy="61" r="29" fill="#e8d2b4"/><path d="M24 160c0-66 112-66 112 0" fill="#aabbd0"/></svg>',
+    }),
+  );
+  await signIn(page, '4');
+  await page.getByLabel('Display name').fill('My custom name');
+  await page.getByRole('button', { name: 'Save profile' }).click();
+  await expect(page.getByText('Profile saved.')).toBeVisible();
+  await linkFixtureX(page, '3003');
+  await expect(page.locator('.profile-identity h2')).toHaveText('Order Member');
+  await expect(page.locator('.profile-identity p')).toHaveText('@order_member_3003');
+  await expect(page.locator('.profile-link strong')).toHaveText('Order Member');
+  await expect(page.locator('.profile-link small')).toHaveText('@order_member_3003');
+  await expect(page.getByLabel('Display name')).toHaveValue('My custom name');
+  await expect(photos).toHaveCount(3);
+  for (const photo of await photos.all()) await expect(photo).toHaveAttribute('src', avatar);
+  await expect(page.locator('.sidebar-brand img')).toHaveAttribute('src', fallback);
+  await page.waitForFunction(() =>
+    [
+      ...document.querySelectorAll('.profile-identity img, .profile-link img, .topbar-avatar img'),
+    ].every((photo) => (photo as HTMLImageElement).naturalWidth > 0),
+  );
+  await expect(page.locator('.route-content')).toHaveCSS('opacity', '1');
+  await page.screenshot({ path: '.local/captures/x-identity-desktop.png', fullPage: true });
+  await page.reload();
+  await expect(page.locator('.profile-identity h2')).toHaveText('Order Member');
+  for (const photo of await photos.all()) await expect(photo).toHaveAttribute('src', avatar);
+  await page.setViewportSize({ width: 360, height: 844 });
+  await noOverflow(page);
+  await expect(page.locator('.route-content')).toHaveCSS('opacity', '1');
+  await page.screenshot({ path: '.local/captures/x-identity-mobile.png', fullPage: true });
+  await page.unroute('https://pbs.twimg.com/**');
+  await page.route('https://pbs.twimg.com/**', (route) => route.abort());
+  await page.reload();
+  for (const photo of await photos.all()) await expect(photo).toHaveAttribute('src', fallback);
+  await expect(page.locator('.profile-identity h2')).toHaveText('Order Member');
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  await expect(page.locator('.profile-identity h2')).toHaveText('A new perspective');
+  await expect(page.locator('.profile-link strong')).toHaveText('Explorer');
+});
+
 test('wallet plus X enables server evidence, authorized reviews, points and persistence', async ({
   page,
 }) => {

@@ -20,7 +20,9 @@ function fixture(xConfigured = true) {
     postAuthor = '101',
     replyTarget = '900',
     xStatus = 200,
-    tokenCalls = 0;
+    tokenCalls = 0,
+    meCalls = 0,
+    avatar = 'https://pbs.twimg.com/profile_images/101/member_normal.jpg';
   const fakeFetch = (async (input: string | URL | Request, init?: RequestInit) => {
     const url = String(input);
     if (url.endsWith('/oauth2/token')) {
@@ -37,10 +39,18 @@ function fixture(xConfigured = true) {
         scope: 'users.read tweet.read offline.access',
       });
     }
-    if (url.endsWith('/users/me'))
+    if (new URL(url).pathname === '/2/users/me') {
+      meCalls++;
+      assert.equal(new URL(url).searchParams.get('user.fields'), 'profile_image_url');
       return Response.json({
-        data: { id: activeX, username: 'member' + activeX, name: 'Test Member' },
+        data: {
+          id: activeX,
+          username: 'member' + activeX,
+          name: 'Test Member',
+          profile_image_url: avatar,
+        },
       });
+    }
     if (url.includes('/tweets/'))
       return Response.json(
         {
@@ -83,6 +93,10 @@ function fixture(xConfigured = true) {
       xStatus = status;
     },
     tokenCalls: () => tokenCalls,
+    meCalls: () => meCalls,
+    setAvatar: (url: string) => {
+      avatar = url;
+    },
   };
 }
 function client(built: Built) {
@@ -264,6 +278,47 @@ test('OAuth is bound to session and state, is single use, and prevents X account
     await built.app.close();
   }
 });
+test('connected X identity is cached, survives session refresh and only updates through the same X account', async () => {
+  const f = fixture(),
+    built = await f.create();
+  try {
+    const c = client(built);
+    await c.login();
+    await c.send('POST', '/api/profile', { name: 'My custom name' });
+    await c.link();
+    const linked = (await c.send('GET', '/api/session')).json().profile;
+    assert.equal(linked.name, 'My custom name');
+    assert.equal(linked.x.name, 'Test Member');
+    assert.equal(linked.x.username, 'member101');
+    assert.equal(linked.x.avatarUrl, 'https://pbs.twimg.com/profile_images/101/member_normal.jpg');
+    await c.send('GET', '/api/session');
+    assert.equal(f.meCalls(), 1, 'Session refresh must not make additional X API requests');
+    f.setAvatar('https://pbs.twimg.com/profile_images/101/updated.jpg');
+    await c.link();
+    assert.equal(
+      (await c.send('GET', '/api/session')).json().profile.x.avatarUrl,
+      'https://pbs.twimg.com/profile_images/101/updated.jpg',
+    );
+    f.setX('202');
+    assert.match((await c.link()).headers.location as string, /different/);
+    assert.equal((await c.send('GET', '/api/session')).json().profile.x.username, 'member101');
+    f.setX('101');
+    for (const unsafe of [
+      'http://pbs.twimg.com/a.jpg',
+      'https://pbs.twimg.com.evil.example/a.jpg',
+      'data:image/svg+xml,test',
+      'https://user:password@pbs.twimg.com/a.jpg',
+      '',
+    ]) {
+      f.setAvatar(unsafe);
+      assert.match((await c.link()).headers.location as string, /success/);
+      assert.equal((await c.send('GET', '/api/session')).json().profile.x.avatarUrl, null);
+    }
+  } finally {
+    await built.app.close();
+  }
+});
+
 test('profile data is isolated; approved points and reward recipients are server controlled and cannot be double credited', async () => {
   const f = fixture(),
     built = await f.create();
@@ -509,6 +564,10 @@ test('wallet identity, encrypted X tokens and contribution records survive a dat
     assert.equal(login.response.json().profile.name, 'Persistent Member');
     assert.equal(login.response.json().ready, true);
     assert.equal(login.response.json().profile.x.id, '101');
+    assert.equal(
+      login.response.json().profile.x.avatarUrl,
+      'https://pbs.twimg.com/profile_images/101/member_normal.jpg',
+    );
     const state = (await next.send('GET', '/api/state')).json().state;
     assert.equal(state.submissions[0].id, record.id);
     assert.equal(state.submissions[0].points, 150);

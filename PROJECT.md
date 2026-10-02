@@ -256,3 +256,9 @@ Corregidas las exclusiones de fuentes para usar `/assets/` y `/assets-src/`, lim
 Nicol eligió **theorderofsteering.com** como dominio principal. El canonical, la guía de Vercel, la configuración de X y el generador privado de variables usan `https://theorderofsteering.com`. El callback de X es `https://theorderofsteering.com/api/auth/x/callback`. Conectar el dominio y sus DNS en Vercel, actualizar `APP_ORIGIN` en Production y configurar OAuth 2.0 Web App con Client ID/Secret antes de comprobar acceso real. Conservar Turso y la clave de cifrado existentes. La wallet de Keeper queda para después por indicación de Nicol.
 
 Corregidos cuatro estados vacíos de la app: las acciones usan la propiedad `action` de `EmptyState`, fuera del párrafo. El historial conserva una frase breve en inglés. No cambia la autenticación, los permisos, las misiones ni los puntos. La validación y las capturas de escritorio/móvil quedan registradas en la nota del proyecto.
+
+## 16. Identidad de X en la app — 2026-10-02
+
+Nicol confirmó que el acceso real con wallet y el vínculo de X funcionan. El perfil, la identidad del menú lateral y el avatar de la cabecera ahora usan el nombre, @usuario y foto obtenidos de X durante OAuth. Los datos se conservan en SQLite/Turso; refrescar la sesión o navegar no vuelve a consultar X. Reconnect X actualiza esos datos y permite importar la foto de cuentas vinculadas antes de esta mejora. El nombre personalizado del perfil se conserva como dato independiente y alternativa cuando X no está conectado.
+
+La migración añade la columna de imagen sin borrar cuentas, tokens cifrados ni contribuciones. Fotos ausentes o inaccesibles usan la PFP aprobada como alternativa; el branding de la web mantiene esa PFP. Keeper y distribución de tokens siguen pendientes. La verificación real de una misión permanece por comprobar.

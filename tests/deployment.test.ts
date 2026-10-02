@@ -2,6 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { once } from 'node:events';
+import { randomUUID } from 'node:crypto';
+import { existsSync, mkdirSync, unlinkSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { privateKeyToAccount } from 'viem/accounts';
 import { createClient } from '@libsql/client';
 import { readServerConfig } from '../server/config.ts';
@@ -124,6 +127,47 @@ test('the Vercel adapter serves raw HTTP bodies, cookies, CSRF and wallet signat
     http.closeAllConnections();
     await new Promise<void>((resolve) => http.close(() => resolve()));
     await built.app.close();
+  }
+});
+
+test('existing member storage gains an avatar column without losing identity or encrypted tokens', async () => {
+  const schema =
+    'CREATE TABLE members(wallet TEXT PRIMARY KEY, name TEXT NOT NULL, chain INTEGER NOT NULL, x_id TEXT UNIQUE, x_username TEXT, x_name TEXT, tokens TEXT, created_at TEXT NOT NULL, linked_at TEXT)';
+  const insert =
+    "INSERT INTO members VALUES('wallet','Custom name',1,'101','member101','Test Member','encrypted-token','created','linked')";
+  const client =
+    process.env.ORDER_TEST_STORAGE === 'libsql'
+      ? createClient({ url: 'file::memory:' })
+      : undefined;
+  mkdirSync('.local', { recursive: true });
+  const path = resolve('.local', `avatar-migration-${randomUUID()}.sqlite`);
+  if (client) {
+    await client.execute(schema);
+    await client.execute(insert);
+  } else {
+    const { DatabaseSync } = await import('node:sqlite');
+    const legacy = new DatabaseSync(path);
+    legacy.exec(schema);
+    legacy.exec(insert);
+    legacy.close();
+  }
+  let database: OrderDatabase | undefined, reopened: OrderDatabase | undefined;
+  try {
+    database = await OrderDatabase.open(path, undefined, client);
+    const member = await database.member('wallet');
+    assert.equal(member?.x_avatar, null);
+    assert.equal(member?.x_id, '101');
+    assert.equal(member?.name, 'Custom name');
+    assert.equal(member?.tokens, 'encrypted-token');
+    await database.db
+      .prepare('UPDATE members SET x_avatar=? WHERE wallet=?')
+      .run('https://pbs.twimg.com/avatar.jpg', 'wallet');
+    reopened = await OrderDatabase.open(path, undefined, client);
+    assert.equal((await reopened.member('wallet'))?.x_avatar, 'https://pbs.twimg.com/avatar.jpg');
+  } finally {
+    reopened?.db.close();
+    database?.db.close();
+    for (const file of [path, path + '-wal', path + '-shm']) if (existsSync(file)) unlinkSync(file);
   }
 });
 

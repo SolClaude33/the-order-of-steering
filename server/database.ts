@@ -14,6 +14,7 @@ export type Member = {
   x_id: string | null;
   x_username: string | null;
   x_name: string | null;
+  x_avatar: string | null;
   tokens: string | null;
   created_at: string;
   linked_at: string | null;
@@ -22,7 +23,7 @@ export type Session = { id: string; wallet: string | null; csrf: string; expires
 type Row = Record<string, unknown>;
 type Arg = string | number | null;
 const schema = [
-  'CREATE TABLE IF NOT EXISTS members(wallet TEXT PRIMARY KEY, name TEXT NOT NULL, chain INTEGER NOT NULL, x_id TEXT UNIQUE, x_username TEXT, x_name TEXT, tokens TEXT, created_at TEXT NOT NULL, linked_at TEXT)',
+  'CREATE TABLE IF NOT EXISTS members(wallet TEXT PRIMARY KEY, name TEXT NOT NULL, chain INTEGER NOT NULL, x_id TEXT UNIQUE, x_username TEXT, x_name TEXT, x_avatar TEXT, tokens TEXT, created_at TEXT NOT NULL, linked_at TEXT)',
   'CREATE TABLE IF NOT EXISTS sessions(id TEXT PRIMARY KEY, wallet TEXT, csrf TEXT NOT NULL, expires INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS challenges(session TEXT PRIMARY KEY, message TEXT NOT NULL, expires INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS oauth(state TEXT PRIMARY KEY, session TEXT NOT NULL, wallet TEXT NOT NULL, verifier TEXT NOT NULL, expires INTEGER NOT NULL)',
@@ -71,6 +72,10 @@ export class OrderDatabase {
       await database.transaction(async () => {
         if (!database.client) {
           for (const statement of schema) await database.db.prepare(statement).run();
+        }
+        const memberColumns = await database.db.prepare('PRAGMA table_info(members)').all();
+        if (!memberColumns.some((column) => column.name === 'x_avatar')) {
+          await database.db.prepare('ALTER TABLE members ADD COLUMN x_avatar TEXT').run();
         }
         if (!(await database.db.prepare('SELECT id FROM missions LIMIT 1').get())) {
           for (const mission of initialState().missions) await database.putMission(mission);

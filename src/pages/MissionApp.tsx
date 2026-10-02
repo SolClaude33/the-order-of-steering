@@ -41,6 +41,7 @@ import { canSubmit, categories, isExpired, totalPoints } from '../lib/model';
 import type { Category, Mission, Status, Submission } from '../lib/model';
 import { useAuth, shortWallet } from '../lib/auth';
 import { ConnectDialog, ConnectionBanner, MemberProfile } from '../components/MemberConnections';
+import { MemberAvatar, memberDisplayName } from '../components/MemberIdentity';
 
 const categoryIcons: Record<Category, Icon> = {
   Content: FeatherIcon,
@@ -1292,11 +1293,15 @@ export default function MissionApp() {
             Back to the website
           </Link>
           <Link className="profile-link" to="/app/profile">
-            <img src="/assets/branding/pfp-approved-v01.png" width="36" height="36" alt="" />
+            <MemberAvatar size={36} />
             <span>
-              <strong>{state.profile}</strong>
+              <strong>{memberDisplayName(auth.profile, state.profile)}</strong>
               <small>
-                {auth.profile ? shortWallet(auth.profile.wallet) : 'Connect your accounts'}
+                {auth.profile?.x
+                  ? '@' + auth.profile.x.username
+                  : auth.profile
+                    ? shortWallet(auth.profile.wallet)
+                    : 'Connect your accounts'}
               </small>
             </span>
             <GearSixIcon size={17} />
@@ -1322,7 +1327,7 @@ export default function MissionApp() {
               {theme === 'dark' ? <SunIcon size={20} /> : <MoonIcon size={20} />}
             </button>
             <Link to="/app/profile" className="topbar-avatar" aria-label="Open profile settings">
-              <img src="/assets/branding/pfp-approved-v01.png" alt="" width="32" height="32" />
+              <MemberAvatar size={32} />
             </Link>
           </div>
         </header>

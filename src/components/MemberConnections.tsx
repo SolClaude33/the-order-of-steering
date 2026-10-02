@@ -10,6 +10,7 @@ import {
   CopyIcon,
 } from '@phosphor-icons/react';
 import { Modal } from './Primitives';
+import { MemberAvatar, memberDisplayName } from './MemberIdentity';
 import { shortWallet, useAuth, useWallets } from '../lib/auth';
 export function Connections({ compact = false }: { compact?: boolean }) {
   const auth = useAuth(),
@@ -154,11 +155,10 @@ export function MemberProfile() {
     location = useLocation();
   const [name, setName] = useState(auth.profile?.name || ''),
     [error, setError] = useState(''),
-    [saved, setSaved] = useState(false),
+    [savedName, setSavedName] = useState(''),
     [busy, setBusy] = useState(false);
   useEffect(() => {
     setName(auth.profile?.name || '');
-    setSaved(false);
   }, [auth.profile?.wallet, auth.profile?.name]);
   const outcome = new URLSearchParams(location.search).get('connection');
   const outcomes: Record<string, string> = {
@@ -189,14 +189,16 @@ export function MemberProfile() {
       </div>
       <div className="profile-overview">
         <div className="profile-identity">
-          <img src="/assets/branding/pfp-approved-v01.png" alt="" width="72" height="72" />
+          <MemberAvatar size={72} />
           <div>
             <span className="page-kicker">THE ORDER OF STEERING</span>
-            <h2>{auth.profile?.name || 'A new perspective'}</h2>
+            <h2>{memberDisplayName(auth.profile, 'A new perspective')}</h2>
             <p>
-              {auth.profile
-                ? shortWallet(auth.profile.wallet)
-                : 'Begin with your wallet, continue with X.'}
+              {auth.profile?.x
+                ? '@' + auth.profile.x.username
+                : auth.profile
+                  ? shortWallet(auth.profile.wallet)
+                  : 'Begin with your wallet, continue with X.'}
             </p>
           </div>
         </div>
@@ -254,7 +256,7 @@ export function MemberProfile() {
               e.preventDefault();
               setBusy(true);
               setError('');
-              setSaved(false);
+              setSavedName('');
               if (!name.trim() || name.trim().length > 40) {
                 setError('Enter a display name of 1 to 40 characters.');
                 setBusy(false);
@@ -263,7 +265,7 @@ export function MemberProfile() {
               try {
                 await auth.request('/profile', { name: name.trim() });
                 await auth.refresh();
-                setSaved(true);
+                setSavedName(`${auth.profile!.wallet}:${name.trim()}`);
               } catch (e) {
                 setError((e as Error).message);
               } finally {
@@ -276,7 +278,10 @@ export function MemberProfile() {
               <input
                 id="member-name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setSavedName('');
+                }}
                 maxLength={40}
                 required
               />
@@ -284,7 +289,9 @@ export function MemberProfile() {
             <button className="button button-outline" disabled={busy}>
               {busy ? 'Saving…' : 'Save profile'}
             </button>
-            {saved && <span role="status">Profile saved.</span>}
+            {savedName === `${auth.profile.wallet}:${name.trim()}` && (
+              <span role="status">Profile saved.</span>
+            )}
             {error && (
               <p className="form-error" role="alert">
                 {error}
