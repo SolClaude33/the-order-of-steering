@@ -34,6 +34,8 @@ Visitas automáticas: enlace HTTPS configurado por Keeper y espera de tres segun
 
 Borrar misiones exige Keeper y confirmación en la interfaz; conserva entregas/puntos y registra el ID en deleted_missions para bloquear restauraciones desde editores antiguos. Cancela visitas pendientes, sin eliminar perfiles ni contribuciones.
 
+Leaderboard: máximo 50 perfiles con X, puntos aprobados históricos, incluidos ceros; empates por creación y clave estable. Agregar en SQL y devolver solo nombre/usuario/foto/rango/puntos/isYou; nunca wallets, tokens ni evidencia. Sin llamadas adicionales a X.
+
 El tablero real empieza vacío; no regenerar misiones de ejemplo. Su retirada es una migración única auditada que preserva entregas. Las pruebas cargan ejemplos explícitos; `ORDER_TEST_EMPTY_BOARD=1` con `npm run test:e2e -- --grep @empty-board` valida el recorrido desde cero.
 
 ## Desarrollo y entrega

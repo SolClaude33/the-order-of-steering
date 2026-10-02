@@ -8,6 +8,7 @@ import {
   CompassIcon,
   ScrollIcon,
   DiamondIcon,
+  TrophyIcon,
   ShieldCheckIcon,
   GearSixIcon,
   MagnifyingGlassIcon,
@@ -43,6 +44,7 @@ import type { Category, Mission, Status, Submission } from '../lib/model';
 import { useAuth, shortWallet } from '../lib/auth';
 import { ConnectDialog, ConnectionBanner, MemberProfile } from '../components/MemberConnections';
 import { MemberAvatar, memberDisplayName } from '../components/MemberIdentity';
+import Leaderboard from './Leaderboard';
 
 const categoryIcons: Record<Category, Icon> = {
   Content: FeatherIcon,
@@ -54,6 +56,7 @@ const navItems = [
   { to: '/app', label: 'Missions', icon: CompassIcon, end: true },
   { to: '/app/history', label: 'My journey', icon: ScrollIcon },
   { to: '/app/rewards', label: 'Rewards', icon: DiamondIcon },
+  { to: '/app/leaderboard', label: 'Leaderboard', icon: TrophyIcon },
   { to: '/app/keepers', label: 'Keepers', icon: ShieldCheckIcon },
   { to: '/app/profile', label: 'Profile', icon: UsersThreeIcon },
   { to: '/app/settings', label: 'Settings', icon: GearSixIcon },
@@ -1611,6 +1614,7 @@ export default function MissionApp() {
               <Route index element={<Missions notify={setToast} />} />
               <Route path="history" element={<History />} />
               <Route path="rewards" element={<Rewards />} />
+              <Route path="leaderboard" element={<Leaderboard />} />
               <Route path="profile" element={<MemberProfile />} />
               <Route path="keepers" element={<Keepers notify={setToast} />} />
               <Route

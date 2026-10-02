@@ -6,9 +6,7 @@ export function memberDisplayName(profile: SessionInfo['profile'], fallback: str
   return profile?.x?.name || profile?.x?.username || profile?.name || fallback;
 }
 
-export function MemberAvatar({ size }: { size: number }) {
-  const { profile } = useAuth();
-  const url = profile?.x?.avatarUrl;
+export function ProfileAvatar({ size, url }: { size: number; url?: string | null }) {
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const showXPhoto = !!url && failedUrl !== url;
   return (
@@ -21,4 +19,9 @@ export function MemberAvatar({ size }: { size: number }) {
       onError={showXPhoto ? () => setFailedUrl(url) : undefined}
     />
   );
+}
+
+export function MemberAvatar({ size }: { size: number }) {
+  const { profile } = useAuth();
+  return <ProfileAvatar size={size} url={profile?.x?.avatarUrl} />;
 }

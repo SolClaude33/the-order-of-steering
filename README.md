@@ -46,6 +46,8 @@ Connecting X saves its display name, handle and profile image for the profile ca
 
 Keepers create, edit, archive and delete missions, review evidence with a recorded reason and export a reward register containing verified wallet addresses. Deletion requires confirmation and removes the mission from every mission board and Keeper management; existing submissions and earned points remain. Deleted mission IDs cannot be restored by stale editors. Approved points come from server records; pending submissions grant no points and final approvals cannot be repeated. Tokens are not transferred by this application.
 
+**Leaderboard** shows up to 50 members with connected X accounts, ordered by all-time approved points. It includes members with zero points, preserves scores from archived or deleted missions and breaks score ties by earliest profile creation, then a stable internal key. Names, handles and photos come from the stored X identity; wallets, tokens and evidence are never returned by the public ranking endpoint. Signed-in members see their own row marked **You**. The leaderboard loads when opened and refreshes when the window regains focus or **Refresh leaderboard** is selected. No extra X API calls or configuration are required.
+
 ## Configure X and Keepers locally
 
 1. Create an X developer app with **OAuth 2.0**, **Web App** client type and **Read** permissions.

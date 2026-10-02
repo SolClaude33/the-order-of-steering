@@ -280,3 +280,9 @@ Nicol eligió premiar la **visita automática de tres segundos, sin verificar fo
 ## 19. Borrado de misiones — 2026-10-02
 
 Nicol pidió poder eliminar una misión, además de archivarla. Keeper → Manage missions añade Delete y una confirmación con el título. La eliminación la retira de todos los tableros y del panel Keeper, preservando entregas, decisiones y puntos. Las entregas anteriores pendientes siguen disponibles para revisión. API protegida por wallet Keeper + X, sesión/origen/CSRF y transacción; un marcador en deleted_missions impide restauraciones por un editor antiguo o reutilización del mismo ID. Se cancelan los intentos de visita sin completar; recompensas ya registradas se conservan. La nueva tabla se crea automáticamente en SQLite/Turso, sin SQL manual ni variables adicionales.
+
+## 20. Leaderboard de contribuciones — 2026-10-02
+
+Nicol pidió un top 50 de usuarios ordenados por puntos. Leaderboard es una pestaña de la app accesible también a visitantes, con tres miembros destacados y una tabla de hasta cincuenta perfiles wallet + X. Incluye usuarios con cero puntos; únicamente se suman entregas aprobadas desde el servidor, conservando puntos de misiones archivadas o eliminadas. Empates por antigüedad del perfil y clave interna estable, sin posiciones que cambien arbitrariamente al refrescar.
+
+GET /api/leaderboard agrega en SQL sobre las tablas existentes y devuelve rango, nombre, usuario, foto de X, puntos e isYou ligado a la sesión real. No publica wallets, tokens ni evidencias. Identidad de X guardada, sin llamadas adicionales a X ni nueva configuración de Turso. La vista muestra estados de carga/error/reintento/vacío, se refresca al volver a la ventana y permite actualización manual; la fila propia se destaca. Diseño púrpura con un acento dorado para el primer puesto, temas claro/oscuro y adaptación móvil. La navegación móvil permite desplazamiento horizontal para acceder a todas las pestañas.

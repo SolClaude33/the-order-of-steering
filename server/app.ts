@@ -395,6 +395,10 @@ export async function buildServer(
       return reply.redirect(origin.origin + '/#/app/profile?connection=failed');
     }
   });
+  app.get('/api/leaderboard', async (req) => {
+    const session = await getSession(req);
+    return database.leaderboard(session?.wallet || undefined);
+  });
   app.get('/api/state', async (req) => {
     const session = await getSession(req);
     const state = await database.state(session?.wallet || undefined);

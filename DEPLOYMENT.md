@@ -12,6 +12,8 @@ To reward an introductory visit, add a HTTPS Mission link and select Visit link 
 
 Mission deletion uses an automatically created deleted_missions table to prevent stale editors from restoring a removed mission. Existing submissions and points are preserved. No manual SQL, new database or additional environment variables are needed.
 
+The top-50 leaderboard reads connected X profiles and approved submission points from the existing database. It needs no new tables, variables, SQL migration or X API permissions.
+
 Production images are committed under `public/assets/` and copied to `dist/assets/` by Vite. The build verifies their presence and SHA-256 integrity. Source-only exclusions in `.vercelignore` use root anchors, such as `/assets/`, so they cannot exclude `public/assets/`.
 
 ## 2. Vercel project

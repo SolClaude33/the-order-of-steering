@@ -6,6 +6,7 @@ import { createClient } from '@libsql/client/http';
 import type { Client, Transaction } from '@libsql/client';
 import { initialState } from '../src/lib/model.ts';
 import type { Mission, Submission, State } from '../src/lib/model.ts';
+import type { LeaderboardData } from '../src/lib/leaderboard.ts';
 
 export type Member = {
   wallet: string;
@@ -159,6 +160,38 @@ export class OrderDatabase {
           .all(wallet)
       : await this.db.prepare('SELECT data FROM submissions ORDER BY rowid DESC').all();
     return rows.map((row) => JSON.parse(row.data as string) as Submission);
+  }
+  async leaderboard(wallet?: string): Promise<LeaderboardData> {
+    // Keep mission history in the score even when its mission has been removed.
+    // SQL aggregates the records; only the top 50 public X identities leave the server.
+    const rows = await this.db
+      .prepare(
+        `
+      WITH scores AS (
+        SELECT wallet, SUM(CAST(json_extract(data, '$.points') AS INTEGER)) AS points
+        FROM submissions
+        WHERE json_extract(data, '$.status') = 'verified'
+        GROUP BY wallet
+      )
+      SELECT m.wallet, m.x_name, m.x_username, m.x_avatar, COALESCE(s.points, 0) AS points
+      FROM members m
+      LEFT JOIN scores s ON s.wallet = m.wallet
+      WHERE m.x_id IS NOT NULL AND m.x_username IS NOT NULL
+      ORDER BY points DESC, m.created_at ASC, m.wallet ASC
+      LIMIT 50
+    `,
+      )
+      .all();
+    return {
+      entries: rows.map((row, index) => ({
+        rank: index + 1,
+        name: (row.x_name || row.x_username) as string,
+        username: row.x_username as string,
+        avatarUrl: row.x_avatar as string | null,
+        points: Number(row.points),
+        isYou: !!wallet && row.wallet === wallet,
+      })),
+    };
   }
   async state(wallet?: string): Promise<State> {
     return {

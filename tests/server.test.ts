@@ -404,6 +404,190 @@ test('profile data is isolated; approved points and reward recipients are server
     await built.app.close();
   }
 });
+test('leaderboard uses approved historical points and public X identity without leaking wallet or evidence', async () => {
+  const f = fixture(),
+    built = await f.create();
+  try {
+    const guest = client(built),
+      a = client(built),
+      k = client(built),
+      incomplete = client(built);
+    assert.deepEqual((await guest.send('GET', '/api/leaderboard')).json(), { entries: [] });
+    await a.login();
+    await a.link();
+    await k.login(keeper);
+    f.setX('202');
+    await k.link();
+    await incomplete.login(other);
+    let entries = (await a.send('GET', '/api/leaderboard')).json().entries;
+    assert.equal(entries.length, 2);
+    assert.equal(
+      entries.find((row: { username: string }) => row.username === 'member101').points,
+      0,
+    );
+    assert.equal(
+      entries.find((row: { username: string }) => row.username === 'member101').isYou,
+      true,
+    );
+    const submission = (
+      await a.send('POST', '/api/submissions', {
+        missionId: 'test-app',
+        url: 'https://example.com/private-evidence',
+        description: 'An original contribution with evidence for review.',
+        points: 999999,
+        status: 'verified',
+      })
+    ).json();
+    const id = submission.id || (await a.send('GET', '/api/state')).json().state.submissions[0].id;
+    entries = (await a.send('GET', '/api/leaderboard')).json().entries;
+    assert.ok(entries.every((row: { points: number }) => row.points === 0));
+    assert.equal(
+      (
+        await k.send('POST', '/api/keepers/review', {
+          id,
+          status: 'verified',
+          reason: 'The evidence satisfies every requirement.',
+        })
+      ).statusCode,
+      200,
+    );
+    const original = (await built.database.missions()).find(
+      (mission) => mission.id === 'test-app',
+    )!;
+    assert.equal(
+      (await k.send('POST', '/api/keepers/missions', { ...original, points: 999 })).statusCode,
+      200,
+    );
+    await k.send('POST', '/api/keepers/archive', { id: original.id, archived: true });
+    assert.equal(
+      (await k.send('POST', '/api/keepers/delete', { id: original.id })).statusCode,
+      200,
+    );
+    // Other decision states never enter the score, even when their configured points are higher.
+    const record = (await built.database.submissions(member.address.toLowerCase()))[0];
+    for (const status of ['pending', 'review', 'rejected'] as const) {
+      await built.database.putSubmission(
+        { ...record, id: randomUUID(), status, points: 1000 },
+        member.address.toLowerCase(),
+        'ranking-fixture-' + status,
+      );
+    }
+    const calls = [f.meCalls(), f.tokenCalls()];
+    const response = await a.send(
+      'GET',
+      '/api/leaderboard?limit=1000&wallet=' + keeper.address + '&points=999999',
+    );
+    assert.equal(response.statusCode, 200);
+    entries = response.json().entries;
+    assert.deepEqual(entries[0], {
+      rank: 1,
+      name: 'Test Member',
+      username: 'member101',
+      avatarUrl: 'https://pbs.twimg.com/profile_images/101/member_normal.jpg',
+      points: 150,
+      isYou: true,
+    });
+    assert.equal(entries[1].points, 0);
+    for (const row of entries)
+      assert.deepEqual(Object.keys(row).sort(), [
+        'avatarUrl',
+        'isYou',
+        'name',
+        'points',
+        'rank',
+        'username',
+      ]);
+    for (const privateValue of [
+      member.address,
+      member.address.toLowerCase(),
+      'private-evidence',
+      'test-access-token',
+      'tokens',
+      'verificationSource',
+    ]) {
+      assert.equal(response.body.includes(privateValue), false);
+    }
+    assert.deepEqual([f.meCalls(), f.tokenCalls()], calls);
+    assert.ok(
+      (await guest.send('GET', '/api/leaderboard'))
+        .json()
+        .entries.every((row: { isYou: boolean }) => !row.isYou),
+    );
+    await a.send('POST', '/api/auth/logout');
+    assert.ok(
+      (await a.send('GET', '/api/leaderboard'))
+        .json()
+        .entries.every((row: { isYou: boolean }) => !row.isYou),
+    );
+  } finally {
+    await built.app.close();
+  }
+});
+
+test('leaderboard caps results at 50 and orders ties by join date then wallet deterministically', async () => {
+  const built = await fixture().create();
+  try {
+    await built.database.transaction(async () => {
+      for (let i = 54; i >= 0; i--) {
+        const wallet = '0x' + (100 + i).toString(16).padStart(40, '0');
+        await built.database.db
+          .prepare(
+            'INSERT INTO members(wallet,name,chain,x_id,x_username,x_name,x_avatar,tokens,created_at) VALUES(?,?,?,?,?,?,?,?,?)',
+          )
+          .run(
+            wallet,
+            'Private profile name',
+            1,
+            String(i),
+            'ranked_' + i,
+            i === 0 ? null : 'Ranked Member ' + i,
+            null,
+            'private-encrypted-token',
+            '2026-10-01T00:00:00.000Z',
+          );
+        await built.database.putSubmission(
+          {
+            id: 'ranking-' + i,
+            missionId: 'removed-mission',
+            missionTitle: 'Historical contribution',
+            points: i === 54 ? 1000 : 10,
+            status: 'verified',
+            url: 'https://example.com/' + i,
+            description: 'Private evidence',
+            reason: 'Approved',
+            createdAt: '2026-10-02',
+            reviewedAt: '2026-10-02',
+            decisions: [],
+          },
+          wallet,
+        );
+      }
+      // The earlier joined profile wins a score tie, independent of insertion order.
+      await built.database.db
+        .prepare('UPDATE members SET created_at=? WHERE x_username=?')
+        .run('2026-09-01T00:00:00.000Z', 'ranked_53');
+    });
+    const response = await client(built).send('GET', '/api/leaderboard?limit=100');
+    const entries = response.json().entries;
+    assert.equal(entries.length, 50);
+    assert.equal(entries[0].username, 'ranked_54');
+    assert.equal(entries[0].points, 1000);
+    assert.equal(entries[1].username, 'ranked_53');
+    assert.equal(entries[2].username, 'ranked_0');
+    assert.equal(entries[2].name, 'ranked_0');
+    assert.equal(entries[49].username, 'ranked_47');
+    assert.deepEqual(
+      entries.map((row: { rank: number }) => row.rank),
+      Array.from({ length: 50 }, (_, i) => i + 1),
+    );
+    assert.deepEqual((await client(built).send('GET', '/api/leaderboard')).json().entries, entries);
+    assert.equal(response.body.includes('Private profile name'), false);
+    assert.equal(response.body.includes('private-encrypted-token'), false);
+  } finally {
+    await built.app.close();
+  }
+});
+
 test('X verification checks the immutable account ID, reply target and required text, and never accepts an API failure as evidence', async () => {
   const f = fixture(),
     built = await f.create();

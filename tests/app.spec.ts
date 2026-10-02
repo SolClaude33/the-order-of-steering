@@ -396,6 +396,8 @@ test('wallet plus X enables server evidence, authorized reviews, points and pers
   await page.getByRole('button', { name: 'Submit evidence', exact: true }).click();
   await expect(page.getByRole('dialog')).toBeHidden();
   await expect(page.locator('.stats-grid')).toContainText('0pts');
+  await page.getByRole('link', { name: 'Leaderboard', exact: true }).click();
+  await expect(page.locator('.leaderboard-own-row td').last()).toHaveText('0pts');
   await page.getByRole('link', { name: /^Keepers\b/ }).click();
   await page.getByRole('button', { name: 'Review submission', exact: true }).click();
   await page
@@ -449,6 +451,13 @@ test('wallet plus X enables server evidence, authorized reviews, points and pers
   await expect(page.locator('.stats-grid')).toContainText('175pts');
   await expect(page.locator('.history-list')).toContainText(title);
   await expect(page.locator('.history-list')).toContainText('Verified');
+  await page.getByRole('link', { name: 'Leaderboard', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Leaderboard', exact: true })).toBeVisible();
+  await expect(page.locator('.leaderboard-own-row td').last()).toHaveText('175pts');
+  await expect(page.locator('.leaderboard-own-row')).toContainText('You');
+  await page.reload();
+  await expect(page.locator('.leaderboard-own-row td').last()).toHaveText('175pts');
+  await noOverflow(page);
   expect(errors).toEqual([]);
 });
 
