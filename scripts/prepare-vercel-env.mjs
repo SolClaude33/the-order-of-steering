@@ -17,6 +17,9 @@ if (existsSync(path)) {
     'KEEPER_WALLETS=',
     '# Canonical HTTPS production origin, no trailing slash.',
     'APP_ORIGIN=https://theorderofsteering.com',
+    '# Public landing settings; empty values hide their controls.',
+    'VITE_X_URL=',
+    'VITE_TOKEN_CA=',
     '',
   ].join('\n');
   writeFileSync(path, content, { flag: 'wx', mode: 0o600 });

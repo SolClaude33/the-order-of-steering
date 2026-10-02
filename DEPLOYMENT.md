@@ -39,7 +39,7 @@ Set `APP_ORIGIN=https://theorderofsteering.com` in **Production** and register t
 
 ## 3. Environment variables
 
-All variables belong to the **server**. Do not add `VITE_` prefixes. Add these under Vercel → Project → Settings → Environment Variables for **Production**:
+The authentication and storage variables below belong to the **server**. Do not add `VITE_` prefixes to secrets. Add these under Vercel → Project → Settings → Environment Variables for **Production**:
 
 | Variable               | Value                                                             | Required                           |
 | ---------------------- | ----------------------------------------------------------------- | ---------------------------------- |
@@ -54,6 +54,17 @@ All variables belong to the **server**. Do not add `VITE_` prefixes. Add these u
 When `APP_ORIGIN` is empty, the API uses Vercel's production project URL. Use that exact URL to access the app and register the X callback. For a custom domain, set `APP_ORIGIN` to that domain and update the X callback together.
 
 `API_PORT` and `DATABASE_PATH` are local-only settings. Vercel supplies `VERCEL`, `VERCEL_ENV`, `VERCEL_URL` and `VERCEL_PROJECT_PRODUCTION_URL`; do not create them yourself.
+
+### Public landing settings
+
+These two values are public and are included in the browser build. Add them in **Production** (and **Preview** if wanted), then redeploy after changing them:
+
+| Variable | Value | Display |
+| --- | --- | --- |
+| `VITE_X_URL` | Full HTTPS X/Twitter URL, e.g. `https://x.com/orderofsteering` | X button in the landing navbar |
+| `VITE_TOKEN_CA` | EVM contract address: `0x` followed by 40 hexadecimal characters | Copyable CA in the hero and footer |
+
+Empty or invalid values hide the corresponding controls. Both CA locations use the same variable. Vite reads these at build time; local changes require restarting `npm run dev`. Never use either variable for OAuth secrets or a private key.
 
 Prepare a private import file locally:
 

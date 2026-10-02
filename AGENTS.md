@@ -45,3 +45,5 @@ Desarrollo local, sin delegación salvo petición nueva. No usar design-taste-fr
 Nicol autorizó subir a **SolClaude33/the-order-of-steering**. Usar exclusivamente ese destino y el Git propio del proyecto; no publicar credenciales ni datos locales. Nicol gestiona Vercel; no desplegar por él.
 
 Seguir `DEPLOYMENT.md`, `README.md` y `.env.example`. Secretos solo en servidor; conservar base y clave juntas. X real requiere configuración y comprobación. Tokens todavía no se distribuyen.
+
+Landing: VITE_X_URL y VITE_TOKEN_CA son valores públicos de build para el enlace X y CA copiable en hero/footer; vacíos/inválidos se ocultan. Nunca poner secretos en variables VITE_.

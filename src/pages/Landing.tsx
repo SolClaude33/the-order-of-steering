@@ -28,6 +28,8 @@ import {
 } from '../components/AtlasVisuals';
 import { Brand } from '../components/Primitives';
 import { useMotionPreference } from '../lib/useMotionPreference';
+import { publicSite } from '../lib/public-config';
+import TokenContract from '../components/TokenContract';
 
 const questions = [
   [
@@ -87,6 +89,18 @@ export default function Landing() {
             </Link>
           </nav>
           <div className="atlas-header-actions">
+            {publicSite.xUrl && (
+              <a
+                className="atlas-x-link"
+                href={publicSite.xUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Follow The Order of Steering on X (new tab)"
+              >
+                <XLogoIcon size={18} aria-hidden="true" />
+                <span>Follow on X</span>
+              </a>
+            )}
             <Link className="atlas-button atlas-button-small" to="/app">
               Enter the app <ArrowUpRightIcon size={17} />
             </Link>
@@ -152,6 +166,9 @@ export default function Landing() {
                     Find your place <ArrowRightIcon size={18} />
                   </Link>
                 </div>
+                {publicSite.tokenCA && (
+                  <TokenContract address={publicSite.tokenCA} placement="hero" />
+                )}
               </motion.div>
               <div className="atlas-hero-annotation" aria-hidden="true">
                 <OrderOrbit />
@@ -399,6 +416,9 @@ export default function Landing() {
             <p className="atlas-footer-word" aria-hidden="true">
               The Order of Steering
             </p>
+            {publicSite.tokenCA && (
+              <TokenContract address={publicSite.tokenCA} placement="footer" />
+            )}
             <div className="atlas-footer-bottom">
               <span>INDEPENDENT MINDS. SHARED PURPOSE.</span>
               <span>THE BEGINNING / VOL. 001</span>

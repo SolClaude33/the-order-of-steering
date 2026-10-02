@@ -50,6 +50,8 @@ Keepers create, edit, archive and delete missions, review evidence with a record
 
 ## Configure X and Keepers locally
 
+Public landing controls use `VITE_X_URL` (HTTPS X/Twitter URL) and `VITE_TOKEN_CA` (EVM token contract address). Configure them in `.env` locally or Vercel's environment variables, then restart development or rebuild/redeploy. The navbar X button and copyable hero/footer CA stay hidden when their values are missing or invalid. These public values are independent of the server's OAuth credentials.
+
 1. Create an X developer app with **OAuth 2.0**, **Web App** client type and **Read** permissions.
 2. Register `http://127.0.0.1:5173/api/auth/x/callback` as an exact callback.
 3. Set `X_CLIENT_ID` and `X_CLIENT_SECRET` in `.env`.

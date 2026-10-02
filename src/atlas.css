@@ -85,6 +85,136 @@
   gap: 16px;
   align-items: center;
 }
+.atlas-x-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 8px 13px;
+  border: 1px solid #cbb4dd35;
+  color: #f1ece4;
+  font-size: 10px;
+  white-space: nowrap;
+  transition:
+    background 0.25s,
+    border-color 0.25s;
+}
+.atlas-x-link:hover {
+  background: #cbb4dd10;
+  border-color: #cbb4dd80;
+}
+.atlas-contract {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  border: 1px solid #ccb4e038;
+  color: #f1ece4;
+  background: #211829b8;
+}
+.atlas-contract-hero {
+  margin-top: 26px;
+  width: fit-content;
+  max-width: 100%;
+  backdrop-filter: blur(12px);
+}
+.atlas-contract-content {
+  flex: 1;
+  min-width: 0;
+}
+.atlas-contract-label {
+  display: block;
+  margin-bottom: 7px;
+  color: #d0b9e3;
+  font-size: 8px;
+  letter-spacing: 1.6px;
+}
+.atlas-contract-label > span {
+  color: #baabc7;
+}
+.atlas-contract code {
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 11px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.atlas-contract-copy {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  flex: 0 0 72px;
+  min-height: 44px;
+  border-left: 1px solid #ccb4e02b;
+  color: #e7d7f1;
+  font-size: 10px;
+}
+.atlas-contract-copy:hover {
+  color: #fff;
+  background: #ccb4e00d;
+}
+.atlas-contract-footer {
+  margin-bottom: 30px;
+  background: #d0b9e305;
+}
+.atlas-contract-footer .atlas-contract-content {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+.atlas-contract-footer .atlas-contract-label {
+  margin: 0;
+  flex: 0 0 auto;
+}
+.atlas-contract-error {
+  flex-basis: 100%;
+  color: #eec5bb;
+  font-size: 11px;
+  line-height: 1.6;
+}
+@media (max-width: 1000px) {
+  .atlas-x-link > span {
+    display: none;
+  }
+  .atlas-x-link {
+    width: 44px;
+    padding: 0;
+  }
+}
+@media (max-width: 640px) {
+  .atlas-header:has(.atlas-x-link) .brand > span {
+    display: none;
+  }
+  .atlas-header:has(.atlas-x-link) .atlas-header-actions {
+    gap: 6px;
+  }
+  .atlas-contract {
+    padding: 14px;
+    gap: 8px;
+  }
+  .atlas-contract code {
+    font-size: 10px;
+  }
+  .atlas-contract-copy {
+    flex-basis: 60px;
+    gap: 5px;
+  }
+  .atlas-contract-footer .atlas-contract-content {
+    display: block;
+  }
+  .atlas-contract-footer .atlas-contract-label {
+    margin-bottom: 7px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atlas-x-link {
+    transition: none;
+  }
+}
 .atlas-header > a,
 .atlas-header-actions {
   flex-shrink: 0;
