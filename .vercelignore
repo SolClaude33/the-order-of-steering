@@ -1,0 +1,9 @@
+.local/
+.env
+.env.*
+assets-src/
+assets/
+tests/
+PROJECT.md
+AGENTS.md
+*.tsbuildinfo

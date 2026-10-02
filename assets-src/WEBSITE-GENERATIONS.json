@@ -1,0 +1,332 @@
+{
+  "date": "2026-10-02",
+  "cost_note": "Costes exactos estimados antes del envío; no se conoce el cargo final. El límite verificado fue 3 créditos por imagen.",
+  "generations": [
+    {
+      "purpose": "Exploración anterior del hero",
+      "job_id": "165348cf-ee82-4978-b2ea-554bcc9bf364",
+      "params": {
+        "model": "gpt_image_2_5",
+        "variant": "sunburst",
+        "quality": "medium",
+        "resolution": "2k",
+        "aspect_ratio": "16:9",
+        "count": 1,
+        "folder_id": "9a9b11c7-3b58-4705-9d40-dd41bdd055ba",
+        "prompt": "Create a premium cinematic environment artwork for The Order of Steering community website, an original interpretation inspired by a fictional decentralized order. Wide 16:9 landscape, photorealistic architectural matte painting with the quiet grandeur of a Denis Villeneuve film, not a videogame poster. A monumental pale weathered limestone cylindrical tower with an open-roof crown and restrained arches rises out of a jagged mountain ridge, placed on the RIGHT THIRD of the image. A long thin stone staircase winds upward through fog toward the tower; three very small anonymous adult figures in deep dark-purple hooded robes walk upward, seen from behind and far away. No visible faces, no weapons, no glowing eyes. Foreground rocks and pale grasses at bottom, vast mist layers and slate mountain silhouettes in distance. A luminous delicate moon is high over the tower, partially veiled by layered clouds. Twilight palette: graphite, muted slate, cool pale stone, soft amethyst-purple haze, silver moonlight, subtle natural film grain. Dramatic soft side light revealing tactile stone, sophisticated atmospheric depth, realistic proportions, truly beautiful clouds. LEFT HALF has predominantly dark atmospheric empty sky and mist with no busy details for a white web headline overlay; the tallest architectural silhouette stays on right. Bottom edge fades naturally to near-dark graphite. High-end editorial composition, ethereal but believable, quiet and mysterious, no loud neon, no sci-fi machinery, no floating symbols. No text, typography, branding, labels, borders or watermark. This is an original production background image, not a website mockup."
+      },
+      "estimated_credits": 1,
+      "status": "Descartada por Nicol; no integrada ni usada como referencia del fondo final",
+      "source": "assets-src/hero-tower-medium-v01.png",
+      "production_files": []
+    },
+    {
+      "purpose": "Mejora High de la exploración anterior",
+      "job_id": "38339c50-cbd5-4576-90e4-33c1ac2a11cb",
+      "params": {
+        "model": "gpt_image_2_5",
+        "variant": "sunburst",
+        "quality": "high",
+        "resolution": "2k",
+        "aspect_ratio": "16:9",
+        "count": 1,
+        "folder_id": "9a9b11c7-3b58-4705-9d40-dd41bdd055ba",
+        "prompt": "Produce a higher-quality final version of this exact landscape artwork for the website. Preserve the reference's overall composition, architecture placement, lighting, atmosphere and colors. Improve architectural texture fidelity, natural fog layers, clean mountain silhouettes and subtle moon/cloud detail without adding anything or altering the design. Original brief: Create a premium cinematic environment artwork for The Order of Steering community website, an original interpretation inspired by a fictional decentralized order. Wide 16:9 landscape, photorealistic architectural matte painting with the quiet grandeur of a Denis Villeneuve film, not a videogame poster. A monumental pale weathered limestone cylindrical tower with an open-roof crown and restrained arches rises out of a jagged mountain ridge, placed on the RIGHT THIRD of the image. A long thin stone staircase winds upward through fog toward the tower; three very small anonymous adult figures in deep dark-purple hooded robes walk upward, seen from behind and far away. No visible faces, no weapons, no glowing eyes. Foreground rocks and pale grasses at bottom, vast mist layers and slate mountain silhouettes in distance. A luminous delicate moon is high over the tower, partially veiled by layered clouds. Twilight palette: graphite, muted slate, cool pale stone, soft amethyst-purple haze, silver moonlight, subtle natural film grain. Dramatic soft side light revealing tactile stone, sophisticated atmospheric depth, realistic proportions, truly beautiful clouds. LEFT HALF has predominantly dark atmospheric empty sky and mist with no busy details for a white web headline overlay; the tallest architectural silhouette stays on right. Bottom edge fades naturally to near-dark graphite. High-end editorial composition, ethereal but believable, quiet and mysterious, no loud neon, no sci-fi machinery, no floating symbols. No text, typography, branding, labels, borders or watermark. This is an original production background image, not a website mockup.",
+        "medias": [
+          {
+            "role": "image",
+            "value": "165348cf-ee82-4978-b2ea-554bcc9bf364"
+          }
+        ]
+      },
+      "estimated_credits": 2.75,
+      "status": "Completada; descartada por Nicol; no descargada ni integrada",
+      "source": null,
+      "production_files": []
+    },
+    {
+      "purpose": "Hero de web pública; arquitectura interior sin personas; reutilizado en banner Genesis",
+      "job_id": "be71cf08-d028-43bd-95b4-f818c0c94c05",
+      "params": {
+        "model": "gpt_image_2_5",
+        "variant": "sunburst",
+        "quality": "high",
+        "resolution": "2k",
+        "aspect_ratio": "16:9",
+        "count": 1,
+        "folder_id": "9a9b11c7-3b58-4705-9d40-dd41bdd055ba",
+        "prompt": "Create a standalone production background artwork for The Order of Steering website. A completely NEW concept: the architecture of an empty interior chamber is the sole protagonist. No people, characters, hooded figures, statues, faces, exterior tower, mountains, staircase landscape or castle. Photorealistic cinematic architectural photography with exquisite material detail and sophisticated restrained mystery. View from inside a vast circular open-air stone chamber, eye-level wide lens from the shaded entrance, looking across a spacious pale limestone floor toward an elegantly curving wall and tall narrow arched openings on the RIGHT HALF. This is an architectural space for thoughtful community gathering, not a temple, altar, cathedral or ritual site. Massive but refined weathered pale silver limestone, subtle mineral veins, precise stone joints, curved built-in low benches at the far perimeter, a few shallow broad floor terraces. The top of the chamber is fully OPEN TO THE SKY with a circular crown of stone piers. Cool dusk sky and diffuse clouds visible above. One exquisite shaft of soft silver-lavender skylight enters from the upper right, illuminating the stone and faint floating dust. Quiet amethyst-purple reflected light in the shadows, natural and restrained, not neon. Stunning depth, measured geometric rhythm, realistic structural construction, tactile soft stone, monumental scale. The LEFT 45 percent remains naturally deeply shaded graphite stone and soft dark atmospheric negative space with VERY LOW visual detail to accommodate a white website headline. Most interesting arches, illuminated stone curves and sky are on the center-right. Floor occupies bottom third, softly fading into charcoal foreground. Palette: pale silver stone, graphite, muted purple, slate dusk, very subtle cool light. Gallery-quality cinematic photography, balanced exposure with legible highlights and rich shadow detail, no excessive grain, no film border. Original artistic interpretation for the project, not an official illustration of Snowmoon. Entirely empty architectural interior. No furniture in foreground, no throne, no glowing rings, runes, symbols, logos, text, typography, watermark, UI or web mockup. Wide horizontal 16:9 composition; architecture and sky remain intelligible when cropping to a narrower mobile viewport."
+      },
+      "estimated_credits": 2.75,
+      "status": "Retirada tras revisión de Nicol: vistas arquitectónicas demasiado parecidas; fuentes y derivados conservados fuera de producción",
+      "source": "assets-src/order-chamber-high-v01.png",
+      "production_files": [],
+      "provider": "Higgsfield",
+      "model_provider": "OpenAI",
+      "reference": "Sin imagen de referencia. Concepto elegido por Nicol: solo espacio interior, arquitectura protagonista.",
+      "retired_production_files": [
+        "assets-src/retired-environments/order-chamber-desktop-v01.webp",
+        "assets-src/retired-environments/order-chamber-mobile-v01.webp"
+      ]
+    },
+    {
+      "purpose": "Fondo de presentación y showcase; detalle de piedra y luz",
+      "provider": "Higgsfield",
+      "model_provider": "OpenAI",
+      "job_id": "41a7c1ad-9108-4f66-9a78-529ad71d9dc4",
+      "params": {
+        "model": "gpt_image_2_5",
+        "variant": "sunburst",
+        "quality": "high",
+        "resolution": "2k",
+        "aspect_ratio": "16:9",
+        "count": 1,
+        "folder_id": "9a9b11c7-3b58-4705-9d40-dd41bdd055ba",
+        "medias": [
+          {
+            "role": "image",
+            "value": "be71cf08-d028-43bd-95b4-f818c0c94c05"
+          }
+        ],
+        "prompt": "Create a new photographic view within the exact architectural world of the reference: the same empty pale limestone Order chamber, graphite shadows and delicate lavender dusk skylight. Purpose: an atmospheric full-width background for a premium website's introduction and contribution journey. The architecture alone is the protagonist. Close architectural composition of a gracefully curved textured limestone wall and the edge of one tall pointed arch on the RIGHT third, viewed from inside a deeply shadowed adjoining corridor. A thin shaft of silver-lavender light reveals exquisite fine mineral texture and quiet stone joints on the curve. A glimpse of soft violet sky through the opening at upper right. LEFT two thirds mostly dark graphite stone with spacious low-detail shadow suitable for light typography. Clearly architectural photography with believable restrained material detail, gentle atmosphere, realistic exposure, cinematic depth, sophisticated contrast, subtle film texture. Wide horizontal16:9. No people, statues, faces, religious altar, furniture, text, logos, decorative runes, illustrations, web mockup or border. Reference for materials, color and architecture only; make a distinct closer view, not a duplicate."
+      },
+      "estimated_credits": 2.75,
+      "status": "Retirada tras revisión de Nicol: vistas arquitectónicas demasiado parecidas; fuentes y derivados conservados fuera de producción",
+      "source": "assets-src/order-stone-high-v01.png",
+      "production_files": [],
+      "reference": "be71cf08-d028-43bd-95b4-f818c0c94c05; interior seleccionado, sin referencia a los paisajes descartados",
+      "retired_production_files": [
+        "assets-src/retired-environments/order-stone-desktop-v01.webp",
+        "assets-src/retired-environments/order-stone-mobile-v01.webp"
+      ]
+    },
+    {
+      "purpose": "Fondo del recorrido y preguntas; galería de arcos; textura del bloque de contenido",
+      "provider": "Higgsfield",
+      "model_provider": "OpenAI",
+      "job_id": "1a23436a-68e6-4729-819e-a71f22eadd52",
+      "params": {
+        "model": "gpt_image_2_5",
+        "variant": "sunburst",
+        "quality": "high",
+        "resolution": "2k",
+        "aspect_ratio": "16:9",
+        "count": 1,
+        "folder_id": "9a9b11c7-3b58-4705-9d40-dd41bdd055ba",
+        "medias": [
+          {
+            "role": "image",
+            "value": "be71cf08-d028-43bd-95b4-f818c0c94c05"
+          }
+        ],
+        "prompt": "Create a distinct wide photographic view inside the same empty pale limestone architectural world as the reference, for the lower contribution showcase and FAQ sections of a premium website. View along a sweeping curved gallery of tall narrow pointed limestone arches, from a dark sheltered interior. Repeated arches recede gently into space on the RIGHT half, with a spacious shallow stepped stone floor and violet dusk sky glimpsed through each opening. Delicate silver lavender skylight touches arch edges, precise stone joints, exquisite tactile weathered pale limestone. LEFT half naturally falls into dark graphite shadow with very low visual detail for text readability. Quiet monumental scale, sophisticated atmosphere and rich shadow depth, elegant architectural photography with realistic structure and beautiful proportions. Use the reference's materials, cool muted palette and architectural rhythm while showing a genuinely different gallery angle. Wide horizontal16:9. The architecture alone is the protagonist. Absolutely no people, cloaks, figures, statues, faces, exterior tower, mountain, altar, throne, glowing symbols, letters, logos, text, watermark, border, website mockup or UI."
+      },
+      "estimated_credits": 2.75,
+      "status": "Retirada tras revisión de Nicol: vistas arquitectónicas demasiado parecidas; fuentes y derivados conservados fuera de producción",
+      "source": "assets-src/order-gallery-high-v01.png",
+      "production_files": [],
+      "reference": "be71cf08-d028-43bd-95b4-f818c0c94c05; interior seleccionado, sin referencia a los paisajes descartados",
+      "retired_production_files": [
+        "assets-src/retired-environments/order-gallery-desktop-v01.webp",
+        "assets-src/retired-environments/order-gallery-mobile-v01.webp"
+      ]
+    },
+    {
+      "purpose": "Banner Genesis de la app; hero público anterior conservado como fuente",
+      "source": "assets-src/order-open-chamber-high-v02.png",
+      "name": "order-open-chamber",
+      "version": "v02",
+      "reference": "Sin imagen de referencia; interpretación original de Chapter 6. Interior vacío, arquitectura y cielo protagonistas.",
+      "provider": "Higgsfield",
+      "model_provider": "OpenAI",
+      "job_id": "39dc3e30-36e6-4a95-8674-69451190e964",
+      "params": {
+        "model": "gpt_image_2_5",
+        "variant": "sunburst",
+        "quality": "high",
+        "resolution": "2k",
+        "aspect_ratio": "16:9",
+        "count": 1,
+        "folder_id": "9a9b11c7-3b58-4705-9d40-dd41bdd055ba",
+        "prompt": "Standalone premium cinematic architectural photograph for a website hero inspired by Snowmoon, Chapter6: an EMPTY open-sky top-floor civic tower chamber surrounded by stone walls, architecture as the protagonist. This is a new original art direction, not a variation of a Gothic gallery. View from a deeply shaded stone entrance on the LEFT across a spacious circular stone floor to the sunlit RIGHT edge of an open rooftop council space. Low solid weathered limestone walls curve around the right perimeter; quiet built-in stone seats along the far edge, empty. The entire upper area is open to a beautiful pale cool blue sky with layered moving-looking clouds; NO roof, no repeated pointed windows, no cathedral arches, no pillars dominating the view. Bold simple carved masonry, broad clean surfaces, realistic substantial joints, tactile mineral detail, geometry rooted in a living civic world rather than religious fantasy. A warm natural late-afternoon shaft grazes stone from upper right, silver-blue shadows and restrained purple undertones connect to the brand. A tiny discrete circular green authentication touchpoint is recessed into a plain stone surface near the entrance on the lower RIGHT, believable everyday technology, not a magic portal or decorative emblem. Natural depth, exquisite exposure and material rendering, cinematic editorial architecture photography, wide16:9. LEFT45% deep near-black indigo shadow and very low detail for white headline, strongest architectural curve in right third. Architecture remains beautiful cropped portrait at center-right. No people, figures, statues, faces, throne, altar, Gothic church, exterior tower panorama, mountains, swords, fantasy runes, floating neon, logos, text, UI, watermark or border."
+      },
+      "estimated_credits": 2.75,
+      "status": "Completada e inspeccionada; sigue integrada en el banner de la app. Hero público sustituido por la llegada humana.",
+      "production_files": [
+        "public/assets/environments/order-open-chamber-desktop-v02.webp",
+        "public/assets/environments/order-open-chamber-mobile-v02.webp"
+      ]
+    },
+    {
+      "purpose": "Contribuciones; patio cívico con piedra, madera y vegetación",
+      "source": "assets-src/order-courtyard-high-v01.png",
+      "name": "order-courtyard",
+      "version": "v01",
+      "reference": "Sin imagen de referencia; interpretación original de Meldan y su convivencia de edificios y plantas en Chapter 1.",
+      "provider": "Higgsfield",
+      "model_provider": "OpenAI",
+      "job_id": "3ad7ca07-f509-46ca-b85a-1f4077d90001",
+      "params": {
+        "model": "gpt_image_2_5",
+        "variant": "sunburst",
+        "quality": "high",
+        "resolution": "2k",
+        "aspect_ratio": "16:9",
+        "count": 1,
+        "folder_id": "9a9b11c7-3b58-4705-9d40-dd41bdd055ba",
+        "prompt": "Standalone cinematic photograph of a living Veridian courtyard, an original interpretation inspired by Snowmoon Chapter1's stone buildings woven into trees and plants. Purpose: a full-width premium website contribution-section scene that feels completely DIFFERENT from a dark tower or gallery. Camera from an interior balcony threshold overlooking a small civic courtyard. Quiet pale stone and dark wood houses in a modern tasteful medieval-inspired vernacular, GREEN trees growing intimately between buildings, overhanging fine leaves, planted rooftop terraces, graceful footpaths and cool blue-grey masonry. Calm, dense living greenery, daylight after rain, moist stone with subtle reflections, shafts of soft warm afternoon sun passing through leaves. An elegant thin stone balcony rail crosses low foreground and is partly veiled by a branch, creating layered depth. Human scale and residential civic warmth, believable high-tech civilization expressed through beautifully maintained public spaces rather than visible machines. Green foliage fills the upper right and background. LEFT30% naturally sheltered shadow remains darker for white typography; center-right bright courtyard. Wide16:9 high-end architectural landscape photography, warm ivory stone, botanical forest green, muted silver blue, subtle dark purple shadow. No people, figures, faces, church or Gothic cathedral, empty repeated arched gallery, towers or castles dominating composition, cyberpunk, neon, text, numbers, logos, watermark, website mockup or UI. Make the beautiful green city and layered nature unmistakable, not just another limestone hall."
+      },
+      "estimated_credits": 2.75,
+      "status": "Completada, inspeccionada e integrada en desktop y móvil; nueva dirección basada en lectura de Snowmoon",
+      "production_files": [
+        "public/assets/environments/order-courtyard-desktop-v01.webp",
+        "public/assets/environments/order-courtyard-mobile-v01.webp"
+      ]
+    },
+    {
+      "purpose": "Identidad de la Order; textura de tela púrpura junto a la PFP aprobada",
+      "source": "assets-src/order-fabric-high-v01.png",
+      "name": "order-fabric",
+      "version": "v01",
+      "reference": "Sin imagen de referencia; interpretación artística del material de la Veridian Privacy Robe de Chapter 1; el tejido exacto no es canon.",
+      "provider": "Higgsfield",
+      "model_provider": "OpenAI",
+      "job_id": "84a560ed-e8a0-4a22-83d1-9cafab70d5b7",
+      "params": {
+        "model": "gpt_image_2_5",
+        "variant": "sunburst",
+        "quality": "high",
+        "resolution": "2k",
+        "aspect_ratio": "16:9",
+        "count": 1,
+        "folder_id": "9a9b11c7-3b58-4705-9d40-dd41bdd055ba",
+        "prompt": "Standalone luxury macro textile photograph for the identity section of The Order of Steering, an original material interpretation inspired by Snowmoon's dark purple Veridian Privacy Robe. ONLY fabric, no person or garment silhouette. Long sculptural folds of rich dark aubergine-purple woven cloth sweep diagonally from lower left toward upper right, like a close-up of a robe laid across a stone surface but the stone is mostly out of view. Beautiful believable fine weave and soft substantial cloth; charcoal nearly black folds contrast with restrained violet highlights where natural sidelight grazes the textile. This is not shiny satin, silk, velvet, plastic, a gradient illustration or a generic abstract wave; use a matte dense textured material with quiet elegant soft folds. Three-dimensional tactile depth, extraordinary microtexture and sophisticated chiaroscuro. RIGHT half has the most interesting large folds; LEFT half has smooth low-detail dark fabric shadow to support small white type if needed. Wide16:9 premium editorial fashion-detail photography. Color dark plum, charcoal, violet, soft desaturated lavender glints. No person, hooded head, face, eyes, human outline, fashion model, weapon, armor, symbol, text, logo, border, watermark, graphic pattern or website mockup."
+      },
+      "estimated_credits": 2.75,
+      "status": "Completada, inspeccionada e integrada en desktop y móvil; nueva dirección basada en lectura de Snowmoon",
+      "production_files": [
+        "public/assets/environments/order-fabric-desktop-v01.webp",
+        "public/assets/environments/order-fabric-mobile-v01.webp"
+      ]
+    },
+    {
+      "purpose": "Hero público: llegada humana a la cámara abierta al cielo",
+      "provider": "Higgsfield",
+      "model_provider": "OpenAI",
+      "job_id": "7bdc4ef8-2285-4013-96c8-245cde8ba31b",
+      "params": {
+        "model": "gpt_image_2_5",
+        "variant": "sunburst",
+        "quality": "high",
+        "resolution": "2k",
+        "aspect_ratio": "16:9",
+        "count": 1,
+        "folder_id": "9a9b11c7-3b58-4705-9d40-dd41bdd055ba",
+        "prompt": "Production cinematic editorial photograph for The Order of Steering website opening. Original artistic interpretation inspired by Snowmoon, a sophisticated civic civilization where ancient-feeling stone, nature and everyday technology coexist. Inside an open-sky rooftop council chamber with low pale limestone perimeter walls and simple empty built-in stone benches. This is a human moment, not a cathedral, medieval sorcery or fantasy battle. A single anonymous ADULT member in a loose dark aubergine purple Privacy Robe, hood raised, is in the RIGHT THIRD, seen from behind in three-quarter view, walking slowly toward the light. Figure is large enough to be the compositional anchor, head around upper-right-center and hem at lower-right; beautiful substantial matte draped robe. No face or glowing eyes visible. Across the far side of the chamber TWO distant adults in dark-purple robes sit quietly by the stone edge, subtle and small, not dominating. A breathtaking late-afternoon sky is visible above the open walls; shafts of natural pale warm sun illuminate stone and gently outline the main robe. One large shadowed stone doorway on left, broad stone threshold across bottom, believable strong geometry, cinematic atmospheric depth, delicate dust in sunlight, exquisitely tactile cloth and mineral texture. LEFT 50 percent deeply shaded charcoal-indigo entrance and low-detail atmospheric shadow for a large white editorial headline. The main adult stays center-right and fully intelligible in a portrait crop of the right half. Contrast darkness and natural warm light; violet folds, silver limestone, cloud blue and warm ivory. Landscape 16:9, luxury narrative architecture/fashion photography, meticulous exposure, beautiful organic film texture. No weapon, throne, altar, church, pointed gothic arcade, magical portal, rune, neon symbols, visible eyes, text, logo, watermark, interface or mockup. No glossy synthetic fabric, distorted bodies or theatrical superhero stance. A quietly alive shared place."
+      },
+      "estimated_credits": 2.75,
+      "status": "Completada, inspeccionada e integrada en desktop y móvil; autorizadas personas por Nicol",
+      "reference": "Sin imagen de referencia. Interpretación original inspirada en los motivos de Snowmoon; no ilustración oficial.",
+      "source": "assets-src/order-arrival-high-v01.png",
+      "production_files": [
+        "public/assets/environments/order-arrival-desktop-v01.webp",
+        "public/assets/environments/order-arrival-mobile-v01.webp"
+      ],
+      "production_metadata": [
+        {
+          "file": "public/assets/environments/order-arrival-desktop-v01.webp",
+          "width": 2400,
+          "height": 1357,
+          "bytes": 351568
+        },
+        {
+          "file": "public/assets/environments/order-arrival-mobile-v01.webp",
+          "width": 900,
+          "height": 1600,
+          "bytes": 160186
+        }
+      ]
+    },
+    {
+      "purpose": "Viñeta del capítulo de comunidad: conversación en jardín",
+      "provider": "Higgsfield",
+      "model_provider": "OpenAI",
+      "job_id": "fca1c0e8-30ba-41dd-b344-cfbd15b0636f",
+      "params": {
+        "model": "gpt_image_2_5",
+        "variant": "sunburst",
+        "quality": "high",
+        "resolution": "2k",
+        "aspect_ratio": "16:9",
+        "count": 1,
+        "folder_id": "9a9b11c7-3b58-4705-9d40-dd41bdd055ba",
+        "prompt": "Production editorial film still for the community chapter of The Order of Steering website. Original interpretation of Snowmoon's Veridia: a stone-and-wood city intimately woven with trees and planted terraces, contemporary civic life in a carefully maintained medieval-inspired vernacular. A quiet human-scale garden balcony, shaded by a large leafy branch, with pale stone houses and planted rooftops soft in the background. TWO fictional ADULT community members in matte dark-purple loose hooded Privacy Robes converse around a small plain stone table in the RIGHT-CENTER of the composition; covered lower faces, eyes naturally shadowed, no luminous eyes. One gestures gently with a natural anatomically correct hand; the other holds a small understated hand device at table level, everyday technology without visible screen text. They are seated comfortably, engaged in thoughtful ordinary conversation. Woven robe folds, warm limestone, dark wood, soft botanical green, fine leaves and real material detail. Warm daylight after rain, exquisite soft sidelight and deep forest-green shadows, quietly intimate, a moment of shared ideas. Medium-wide framing from a neighboring balcony entrance; left third layered leaf shadow and out-of-focus stone, strongest figures from 55 to80 percent across frame. Preserve both people in a portrait crop of center-right. Natural cinematic photographic realism, sophisticated color and depth, meticulously rendered faces only partly visible and realistic anatomy. Wide16:9. No armor, weapons, wizards, ceremonial congregation, altar, cathedral, neon, magical effects, glowing runes, futuristic billboard, full face reveal, fantasy symbols, logos, readable letters or UI, watermark, borders or website mockup."
+      },
+      "estimated_credits": 2.75,
+      "status": "Completada, inspeccionada e integrada en desktop y móvil; autorizadas personas por Nicol",
+      "reference": "Sin imagen de referencia. Interpretación original inspirada en los motivos de Snowmoon; no ilustración oficial.",
+      "source": "assets-src/order-conversation-high-v01.png",
+      "production_files": [
+        "public/assets/environments/order-conversation-desktop-v01.webp",
+        "public/assets/environments/order-conversation-mobile-v01.webp"
+      ],
+      "production_metadata": [
+        {
+          "file": "public/assets/environments/order-conversation-desktop-v01.webp",
+          "width": 1600,
+          "height": 905,
+          "bytes": 283936
+        },
+        {
+          "file": "public/assets/environments/order-conversation-mobile-v01.webp",
+          "width": 1050,
+          "height": 840,
+          "bytes": 218486
+        }
+      ]
+    },
+    {
+      "date": "2026-10-02",
+      "purpose": "Landing hero: the Assembly, an invitation to leave a contribution record",
+      "provider": "Higgsfield",
+      "model_provider": "OpenAI",
+      "job_id": "de5f6941-72f4-49e2-ac2e-3d046204977c",
+      "params": {
+        "model": "gpt_image_2_5",
+        "variant": "sunburst",
+        "quality": "high",
+        "resolution": "2k",
+        "aspect_ratio": "16:9",
+        "count": 1,
+        "prompt": "Create a final premium cinematic architectural photograph for The Order of Steering community website. ORIGINAL fictional open-roof assembly chamber, not a website mockup. Wide 16:9 image, exceptionally detailed tactile weathered ivory limestone. View from a dark side passage looking into a monumental CIRCULAR courtyard on the RIGHT two thirds. A rhythm of tall curved stone piers, broad concentric shallow circular steps and an open oculus framing a pale early-morning sky. Fine warm sunlight cuts diagonally across the curved steps; restrained atmospheric haze reveals immense depth. Three small anonymous adult figures in deep aubergine-purple hooded privacy robes stand far away around the right-hand steps, faces concealed, no close foreground person. Architecture is the hero; believable human scale. LEFT 40 percent is a quiet, dark olive-green shadowed stone wall and shadowed floor, extremely calm low-contrast negative space reserved for a large cream web headline. Center-right should remain beautiful when cropped to portrait. Palette: near-black forest green shadows, warm chalk limestone, desaturated bronze sunlight, very subtle plum robe accents. The image must feel like an expensive architectural campaign shot on large-format cinema, meditative, sophisticated, real rough stone edges, exquisite light and shadow. Asymmetric composition and strong sweeping curves, subtle natural grain, high photographic fidelity. No fantasy towers, no moon landscape, no swords, no glowing eyes, no magical symbols, no neon, no sci-fi machinery, no grass foreground, no visible faces, no text, no typography, no UI, no borders, no watermark."
+      },
+      "estimated_credits": 2.75,
+      "final_charge": "Unknown; not reported by the tool",
+      "status": "Completed, inspected and integrated locally on desktop and mobile",
+      "reference": "No image reference. Original composition informed by the documented open-roof Order tower motif; not an official illustration.",
+      "source": "assets-src/order-assembly-high-v01.png",
+      "source_dimensions": {
+        "width": 2688,
+        "height": 1520
+      },
+      "production_files": [
+        "public/assets/environments/order-assembly-desktop-v01.webp",
+        "public/assets/environments/order-assembly-mobile-v01.webp"
+      ],
+      "production_metadata": [
+        {
+          "file": "public/assets/environments/order-assembly-desktop-v01.webp",
+          "width": 2400,
+          "height": 1357,
+          "bytes": 436904
+        },
+        {
+          "file": "public/assets/environments/order-assembly-mobile-v01.webp",
+          "width": 900,
+          "height": 1600,
+          "bytes": 231552
+        }
+      ]
+    }
+  ]
+}

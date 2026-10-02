@@ -1,0 +1,15 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.local/
+*.local
+.env
+.env.*
+!.env.example
+.vercel/
+*.log
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.key
+*.pem
