@@ -13,6 +13,7 @@ type Store = {
   save: (mission: Mission) => Promise<void>;
   review: (id: string, status: Exclude<Status, 'pending'>, reason: string) => Promise<void>;
   archive: (id: string, archived: boolean) => Promise<void>;
+  deleteMission: (id: string) => Promise<void>;
 };
 const StoreContext = createContext<Store | null>(null);
 export function StoreProvider({ children }: { children: ReactNode }) {
@@ -75,6 +76,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         save: (mission) => mutate('/keepers/missions', mission),
         review: (id, status, reason) => mutate('/keepers/review', { id, status, reason }),
         archive: (id, archived) => mutate('/keepers/archive', { id, archived }),
+        deleteMission: (id) => mutate('/keepers/delete', { id }),
       }}
     >
       {children}

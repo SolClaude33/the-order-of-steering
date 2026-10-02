@@ -10,6 +10,8 @@ Tables are created automatically on the first API request, including persistent 
 
 To reward an introductory visit, add a HTTPS Mission link and select Visit link — automatic after 3 seconds in the Keeper editor. The server records the configured points once per wallet/mission. This verifies a timed link visit, not an X follow, and requires no additional environment variables or X API calls.
 
+Mission deletion uses an automatically created deleted_missions table to prevent stale editors from restoring a removed mission. Existing submissions and points are preserved. No manual SQL, new database or additional environment variables are needed.
+
 Production images are committed under `public/assets/` and copied to `dist/assets/` by Vite. The build verifies their presence and SHA-256 integrity. Source-only exclusions in `.vercelignore` use root anchors, such as `/assets/`, so they cannot exclude `public/assets/`.
 
 ## 2. Vercel project

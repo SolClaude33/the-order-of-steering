@@ -592,6 +592,11 @@ export async function buildServer(
     if (mission.verification === 'x_reply' && !mission.targetPostId)
       throw new PublicError('Add the target X post ID for a reply mission.');
     return database.transaction(async () => {
+      if (await database.db.prepare('SELECT id FROM deleted_missions WHERE id=?').get(mission.id))
+        throw new PublicError(
+          'This mission was deleted. Refresh the page and create a new mission.',
+          409,
+        );
       const next = (
         await domain(async () => saveMission(await database.state(), mission))
       ).missions.find((m) => m.id === mission.id)!;
@@ -610,6 +615,27 @@ export async function buildServer(
       if (!mission) throw new PublicError('Mission not found.', 404);
       await database.putMission({ ...mission, archived });
       await database.audit(member.wallet, 'mission_archive', id);
+      return { ok: true };
+    });
+  });
+  app.post('/api/keepers/delete', async (req) => {
+    const { member, session } = await requireKeeper(req);
+    const { id } = z.object({ id: z.string().min(1).max(80) }).parse(req.body);
+    return database.transaction(async () => {
+      if ((await database.session(session.id))?.wallet !== member.wallet)
+        throw new PublicError('Your session ended. Sign in again.', 401);
+      if (await database.db.prepare('SELECT id FROM deleted_missions WHERE id=?').get(id))
+        return { ok: true };
+      const mission = (await database.missions()).find((m) => m.id === id);
+      if (!mission) throw new PublicError('Mission not found.', 404);
+      await database.db
+        .prepare('INSERT INTO deleted_missions(id,deleted_at,deleted_by) VALUES(?,?,?)')
+        .run(id, new Date().toISOString(), member.wallet);
+      await database.db.prepare('DELETE FROM missions WHERE id=?').run(id);
+      await database.db
+        .prepare('DELETE FROM mission_visits WHERE mission_id=? AND submission_id IS NULL')
+        .run(id);
+      await database.audit(member.wallet, 'mission_delete', id);
       return { ok: true };
     });
   });

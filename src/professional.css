@@ -643,6 +643,28 @@
   margin-top: 16px;
   margin-bottom: 0;
 }
+.manage-list > article > div {
+  min-width: 0;
+}
+.manage-list .mission-management-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+.manage-list h3 {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 760px) {
+  .manage-list > article {
+    flex-wrap: wrap;
+  }
+  .manage-list .mission-management-actions {
+    flex-basis: 100%;
+    justify-content: flex-end;
+    padding-top: 8px;
+  }
+}
 .mission-connect-gate > svg {
   color: var(--soft);
 }

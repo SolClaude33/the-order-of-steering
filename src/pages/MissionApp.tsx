@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import {
@@ -19,6 +19,7 @@ import {
   PlusIcon,
   PencilSimpleIcon,
   ArchiveIcon,
+  TrashIcon,
   SunIcon,
   MoonIcon,
   DownloadSimpleIcon,
@@ -1081,6 +1082,69 @@ function ReviewDialog({
     </Modal>
   );
 }
+function DeleteMissionDialog({
+  mission,
+  onClose,
+  notify,
+}: {
+  mission: Mission;
+  onClose: () => void;
+  notify: (text: string) => void;
+}) {
+  const { deleteMission } = useStore();
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    cancelRef.current?.focus();
+  }, []);
+  return (
+    <Modal
+      title="Delete mission"
+      onClose={() => {
+        if (!busy) onClose();
+      }}
+    >
+      <p>
+        <strong>{mission.title}</strong>
+      </p>
+      <p>
+        This permanently removes the mission from all mission boards and Keeper management. Existing
+        submissions and earned points are preserved.
+      </p>
+      {error && (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      )}
+      <div className="form-actions">
+        <button ref={cancelRef} className="button button-ghost" disabled={busy} onClick={onClose}>
+          Cancel
+        </button>
+        <button
+          className="button button-danger"
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            setError('');
+            try {
+              await deleteMission(mission.id);
+              notify('Mission deleted. Existing submissions and earned points are preserved.');
+              onClose();
+            } catch (e) {
+              setError((e as Error).message);
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          <TrashIcon size={18} />
+          {busy ? 'Deleting…' : 'Delete mission'}
+        </button>
+      </div>
+    </Modal>
+  );
+}
 function Keepers({ notify }: { notify: (text: string) => void }) {
   const { state, keeperSubmissions, archive: archiveMission } = useStore();
   const auth = useAuth();
@@ -1089,6 +1153,7 @@ function Keepers({ notify }: { notify: (text: string) => void }) {
   const [editor, setEditor] = useState<Mission | 'new' | null>(null);
   const [review, setReview] = useState<Submission | null>(null);
   const [archive, setArchive] = useState<Mission | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Mission | null>(null);
   const pending = keeperSubmissions.filter((s) => s.status === 'pending' || s.status === 'review');
   if (!auth.isKeeper || !auth.ready)
     return (
@@ -1221,20 +1286,33 @@ function Keepers({ notify }: { notify: (text: string) => void }) {
                       : `Until ${formatDate(m.deadline)}`}
                 </p>
               </div>
-              <button
-                className="icon-button"
-                aria-label={`Edit ${m.title}`}
-                onClick={() => setEditor(m)}
+              <div
+                className="mission-management-actions"
+                role="group"
+                aria-label={`Manage ${m.title}`}
               >
-                <PencilSimpleIcon size={20} />
-              </button>
-              <button
-                className="icon-button"
-                aria-label={`${m.archived ? 'Reopen' : 'Archive'} ${m.title}`}
-                onClick={() => setArchive(m)}
-              >
-                <ArchiveIcon size={20} />
-              </button>
+                <button
+                  className="icon-button"
+                  aria-label={`Edit ${m.title}`}
+                  onClick={() => setEditor(m)}
+                >
+                  <PencilSimpleIcon size={20} />
+                </button>
+                <button
+                  className="icon-button"
+                  aria-label={`${m.archived ? 'Reopen' : 'Archive'} ${m.title}`}
+                  onClick={() => setArchive(m)}
+                >
+                  <ArchiveIcon size={20} />
+                </button>
+                <button
+                  className="button button-ghost button-small danger-button"
+                  aria-label={`Delete ${m.title}`}
+                  onClick={() => setDeleteTarget(m)}
+                >
+                  <TrashIcon size={17} /> Delete
+                </button>
+              </div>
             </article>
           ))}
         </div>
@@ -1261,6 +1339,13 @@ function Keepers({ notify }: { notify: (text: string) => void }) {
       )}
       {review && (
         <ReviewDialog submission={review} onClose={() => setReview(null)} notify={notify} />
+      )}
+      {deleteTarget && (
+        <DeleteMissionDialog
+          mission={deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          notify={notify}
+        />
       )}
       {archive && (
         <Modal

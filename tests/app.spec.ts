@@ -414,6 +414,41 @@ test('wallet plus X enables server evidence, authorized reviews, points and pers
     () => getComputedStyle(document.querySelector('.route-content')!).opacity === '1',
   );
   await page.screenshot({ path: '.local/captures/profile-connected-desktop.png', fullPage: true });
+  await page.getByRole('link', { name: /^Keepers\b/ }).click();
+  await page.getByRole('button', { name: /Manage missions/ }).click();
+  const managed = page
+    .locator('.manage-list article')
+    .filter({ has: page.getByRole('heading', { name: title, exact: true }) });
+  await managed.getByRole('button', { name: `Delete ${title}`, exact: true }).click();
+  const confirm = page.getByRole('dialog', { name: 'Delete mission', exact: true });
+  await expect(confirm.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();
+  await expect(confirm).toHaveCSS('opacity', '1');
+  await page.screenshot({ path: '.local/captures/delete-mission-desktop.png' });
+  await page.keyboard.press('Escape');
+  await expect(confirm).toBeHidden();
+  await expect(managed).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await noOverflow(page);
+  await managed.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: '.local/captures/keeper-delete-mobile.png' });
+  await managed.getByRole('button', { name: `Delete ${title}`, exact: true }).click();
+  await expect(confirm).toHaveCSS('opacity', '1');
+  await noOverflow(page);
+  await page.screenshot({ path: '.local/captures/delete-mission-mobile.png' });
+  await confirm.getByRole('button', { name: 'Delete mission', exact: true }).focus();
+  await page.keyboard.press('Enter');
+  await expect(confirm).toBeHidden();
+  await expect(managed).toHaveCount(0);
+  await page.reload();
+  await page.getByRole('button', { name: /Manage missions/ }).click();
+  await expect(managed).toHaveCount(0);
+  await page.getByRole('link', { name: 'Missions', exact: true }).click();
+  await page.getByLabel('Filter by availability').selectOption('all');
+  await expect(page.getByRole('heading', { name: title, exact: true })).toHaveCount(0);
+  await page.getByRole('link', { name: 'My journey', exact: true }).click();
+  await expect(page.locator('.stats-grid')).toContainText('175pts');
+  await expect(page.locator('.history-list')).toContainText(title);
+  await expect(page.locator('.history-list')).toContainText('Verified');
   expect(errors).toEqual([]);
 });
 

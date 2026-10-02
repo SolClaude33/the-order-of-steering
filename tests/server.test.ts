@@ -739,6 +739,190 @@ test('a visit started on one API instance completes on another without duplicate
   }
 });
 
+test('Keeper deletion preserves points and pending reviews, rejects other roles and cannot be undone by a stale save', async () => {
+  const f = fixture(),
+    built = await f.create();
+  try {
+    const guest = client(built),
+      a = client(built),
+      k = client(built);
+    const id = 'test-app';
+    const original = (await built.database.missions()).find((m) => m.id === id)!;
+    await guest.initialize();
+    assert.equal((await guest.send('POST', '/api/keepers/delete', { id })).statusCode, 401);
+    await k.login(keeper);
+    assert.equal((await k.send('POST', '/api/keepers/delete', { id })).statusCode, 403);
+    await k.link();
+    await a.login();
+    f.setX('202');
+    await a.link();
+    assert.equal((await a.send('POST', '/api/keepers/delete', { id })).statusCode, 403);
+    assert.equal(
+      (await k.send('POST', '/api/keepers/delete', { id }, { 'x-csrf-token': 'forged' }))
+        .statusCode,
+      403,
+    );
+    assert.equal(
+      (
+        await a.send('POST', '/api/submissions', {
+          missionId: id,
+          url: 'https://example.com/deleted-approved',
+          description: 'An original contribution that remains part of the member history.',
+        })
+      ).statusCode,
+      200,
+    );
+    const first = (await a.send('GET', '/api/state')).json().state.submissions[0];
+    assert.equal(
+      (
+        await k.send('POST', '/api/keepers/review', {
+          id: first.id,
+          status: 'verified',
+          reason: 'The evidence meets the mission requirements.',
+        })
+      ).statusCode,
+      200,
+    );
+    assert.equal(
+      (
+        await k.send('POST', '/api/submissions', {
+          missionId: id,
+          url: 'https://example.com/deleted-pending',
+          description: 'Another contribution submitted before the mission was deleted.',
+        })
+      ).statusCode,
+      200,
+    );
+    const pending = (await k.send('GET', '/api/state')).json().state.submissions[0];
+    const before = await built.database.submissions(member.address.toLowerCase());
+    const deleted = await Promise.all([
+      k.send('POST', '/api/keepers/delete', { id }),
+      k.send('POST', '/api/keepers/delete', { id }),
+    ]);
+    for (const response of deleted) assert.equal(response.statusCode, 200, response.body);
+    assert.equal(
+      (await built.database.missions()).some((m) => m.id === id),
+      false,
+    );
+    assert.deepEqual(await built.database.submissions(member.address.toLowerCase()), before);
+    assert.equal(totalPoints((await a.send('GET', '/api/state')).json().state), original.points);
+    assert.equal((await k.send('POST', '/api/keepers/missions', original)).statusCode, 409);
+    assert.equal(
+      (await k.send('POST', '/api/keepers/archive', { id, archived: false })).statusCode,
+      404,
+    );
+    assert.equal(
+      (
+        await a.send('POST', '/api/submissions', {
+          missionId: id,
+          url: 'https://example.com/new-after-deletion',
+          description: 'No new submission may enter a deleted mission.',
+        })
+      ).statusCode,
+      404,
+    );
+    assert.equal(
+      (
+        await k.send('POST', '/api/keepers/review', {
+          id: pending.id,
+          status: 'verified',
+          reason: 'Submitted before deletion and meets the original brief.',
+        })
+      ).statusCode,
+      200,
+    );
+    const register = (await k.send('POST', '/api/keepers/reward-register')).json();
+    assert.equal(
+      register.members.find((m: { wallet: string }) => m.wallet === member.address).points,
+      original.points,
+    );
+    assert.equal(
+      (
+        await built.database.db
+          .prepare("SELECT * FROM audit WHERE action='mission_delete' AND subject=?")
+          .all(id)
+      ).length,
+      1,
+    );
+    assert.equal(
+      (await k.send('POST', '/api/keepers/delete', { id: 'missing-mission' })).statusCode,
+      404,
+    );
+  } finally {
+    await built.app.close();
+  }
+});
+
+test('deletion cancels pending visits while keeping completed visit rewards', async () => {
+  const f = fixture(),
+    built = await f.create();
+  try {
+    const k = client(built),
+      a = client(built);
+    await k.login(keeper);
+    await k.link();
+    await a.login();
+    f.setX('202');
+    await a.link();
+    const mission = {
+      ...initialState().missions[2],
+      id: 'visit-deletion',
+      verification: 'visit' as const,
+      actionUrl: 'https://x.com/orderofsteering',
+    };
+    await built.database.putMission(mission);
+    const pending = (await a.send('POST', '/api/visits/start', { missionId: mission.id })).json();
+    const approved = (await k.send('POST', '/api/visits/start', { missionId: mission.id })).json();
+    await built.database.db
+      .prepare('UPDATE mission_visits SET started_at=?')
+      .run(Date.now() - 3100);
+    assert.equal(
+      (
+        await k.send('POST', '/api/visits/complete', {
+          missionId: mission.id,
+          token: approved.token,
+        })
+      ).statusCode,
+      200,
+    );
+    assert.equal((await k.send('POST', '/api/keepers/delete', { id: mission.id })).statusCode, 200);
+    assert.equal(
+      (
+        await a.send('POST', '/api/visits/complete', {
+          missionId: mission.id,
+          token: pending.token,
+        })
+      ).statusCode,
+      409,
+    );
+    assert.equal(
+      (await a.send('POST', '/api/visits/start', { missionId: mission.id })).statusCode,
+      404,
+    );
+    assert.equal(
+      (
+        await k.send('POST', '/api/visits/complete', {
+          missionId: mission.id,
+          token: approved.token,
+        })
+      ).statusCode,
+      200,
+    );
+    assert.equal(totalPoints((await k.send('GET', '/api/state')).json().state), mission.points);
+    assert.equal(totalPoints((await a.send('GET', '/api/state')).json().state), 0);
+    assert.equal(
+      (
+        await built.database.db
+          .prepare('SELECT * FROM mission_visits WHERE mission_id=?')
+          .all(mission.id)
+      ).length,
+      1,
+    );
+  } finally {
+    await built.app.close();
+  }
+});
+
 test('OAuth token encryption detects tampering', () => {
   const key = Buffer.alloc(32, 3);
   const tokens = { access_token: 'secret', refresh_token: 'refresh', expires_at: 200000 };

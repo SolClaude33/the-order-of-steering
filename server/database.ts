@@ -29,6 +29,7 @@ const schema = [
   'CREATE TABLE IF NOT EXISTS oauth(state TEXT PRIMARY KEY, session TEXT NOT NULL, wallet TEXT NOT NULL, verifier TEXT NOT NULL, expires INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS token_refresh_locks(wallet TEXT PRIMARY KEY, owner TEXT NOT NULL, expires INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS missions(id TEXT PRIMARY KEY, data TEXT NOT NULL)',
+  'CREATE TABLE IF NOT EXISTS deleted_missions(id TEXT PRIMARY KEY, deleted_at TEXT NOT NULL, deleted_by TEXT NOT NULL)',
   'CREATE TABLE IF NOT EXISTS mission_visits(id TEXT PRIMARY KEY, wallet TEXT NOT NULL REFERENCES members(wallet), mission_id TEXT NOT NULL, mission_version TEXT NOT NULL, started_at INTEGER NOT NULL, expires INTEGER NOT NULL, submission_id TEXT)',
   'CREATE TABLE IF NOT EXISTS submissions(id TEXT PRIMARY KEY, wallet TEXT NOT NULL REFERENCES members(wallet), evidence TEXT NOT NULL UNIQUE, data TEXT NOT NULL)',
   'CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY, actor TEXT NOT NULL, action TEXT NOT NULL, subject TEXT NOT NULL, at TEXT NOT NULL)',

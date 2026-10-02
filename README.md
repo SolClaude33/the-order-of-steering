@@ -44,7 +44,7 @@ X identity is linked by its immutable account ID; one X account belongs to one w
 
 Connecting X saves its display name, handle and profile image for the profile card, sidebar and header avatar. There is no separate display-name editor. These details are read from storage during navigation. Profiles linked before image support was added can use **Reconnect X** once to import the photo; reconnecting also updates changed X profile details. Unavailable photos fall back to the Order avatar.
 
-Keepers create, edit and archive missions, review evidence with a recorded reason and export a reward register containing verified wallet addresses. Approved points come from server records; pending submissions grant no points and final approvals cannot be repeated. Tokens are not transferred by this application.
+Keepers create, edit, archive and delete missions, review evidence with a recorded reason and export a reward register containing verified wallet addresses. Deletion requires confirmation and removes the mission from every mission board and Keeper management; existing submissions and earned points remain. Deleted mission IDs cannot be restored by stale editors. Approved points come from server records; pending submissions grant no points and final approvals cannot be repeated. Tokens are not transferred by this application.
 
 ## Configure X and Keepers locally
 

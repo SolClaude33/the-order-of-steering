@@ -32,6 +32,8 @@ Exigir wallet y X para entregas; Keepers mediante allowlist del servidor. No ace
 
 Visitas automáticas: enlace HTTPS configurado por Keeper y espera de tres segundos en servidor, con intentos persistidos en mission_visits. Una recompensa por wallet/misión, sin comprobar follows ni consultar X. Nuevos métodos deben conservar esa distinción y la autorización del servidor.
 
+Borrar misiones exige Keeper y confirmación en la interfaz; conserva entregas/puntos y registra el ID en deleted_missions para bloquear restauraciones desde editores antiguos. Cancela visitas pendientes, sin eliminar perfiles ni contribuciones.
+
 El tablero real empieza vacío; no regenerar misiones de ejemplo. Su retirada es una migración única auditada que preserva entregas. Las pruebas cargan ejemplos explícitos; `ORDER_TEST_EMPTY_BOARD=1` con `npm run test:e2e -- --grep @empty-board` valida el recorrido desde cero.
 
 ## Desarrollo y entrega
